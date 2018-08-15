@@ -1,0 +1,29 @@
+{
+  "name": "calculator",
+  "version": "1.0.0",
+  "description": "Calculator",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/azure-pipelines-samples/node.js"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "exit 0",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "azure",
+    "pipelines",
+    "devops",
+    "vsts",
+    "ci",
+    "cd"
+  ],
+  "author": "Edward Thomson <ethomson@microsoft.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.3"
+  },
+  "devDependencies": {}
+}
