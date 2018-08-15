@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node server.js",
     "build": "exit 0",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --timeout 10000"
   },
   "keywords": [
     "azure",
@@ -25,5 +25,9 @@
   "dependencies": {
     "express": "^4.16.3"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "supertest": "^3.1.0"
+  }
 }
