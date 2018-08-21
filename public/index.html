@@ -1,0 +1,234 @@
+<html>
+  <head>
+    <title>Pocket Calculator</title>
+    <script>
+      'use strict';
+
+      var states = {
+        "start": 0,
+        "operand1": 1,
+        "operator": 2,
+        "operand2": 3,
+        "complete": 4
+      };
+      var state = states.start;
+
+      var previousOperand1 = 0;
+      var previousOperand2 = 0;
+      var previousOperation = null;
+
+      var operand1 = 0;
+      var operand2 = 0;
+      var operation = null;
+
+      function getValue()
+      {
+        return document.getElementById("result").value;
+      }
+
+      function setValue(n)
+      {
+        document.getElementById("result").value = n;
+      }
+
+      function setLoading(loading)
+      {
+        if (loading) {
+          document.getElementById("loading").style.visibility = "visible";
+        } else {
+          document.getElementById("loading").style.visibility = "hidden";
+        }
+
+        var buttons = document.querySelectorAll("BUTTON");
+
+        for (var i = 0; i < buttons.length; i++) {
+          buttons[i].disabled = loading;
+        }
+      }
+
+      function calculate(operand1, operand2, operation)
+      {
+        var uri = location.origin + "/arithmetic";
+
+        switch(operation) {
+          case '+':
+            uri += "?operation=add";
+            break;
+          case '-':
+            uri += "?operation=subtract";
+            break;
+          case '*':
+            uri += "?operation=multiply";
+            break;
+          case '/':
+            uri += "?operation=divide";
+            break;
+          default:
+            setValue("ERROR");
+            return;
+        }
+
+        uri += "&operand1=" + encodeURIComponent(operand1);
+        uri += "&operand2=" + encodeURIComponent(operand2);
+
+        setLoading(true);
+
+        var http = new XMLHttpRequest();
+        http.open("GET", uri, true);
+        http.onload = function() {
+          setLoading(false);
+
+          if (http.status == 200) {
+            var response = JSON.parse(http.responseText);
+            setValue(response.result);
+          } else {
+            setValue("ERROR");
+          }
+        };
+        http.send(null);
+      }
+
+      function clearPressed()
+      {
+        setValue(0);
+
+        previousOperand1 = 0;
+        previousOperand2 = 0;
+        previousOperation = null;
+        operand1 = 0;
+        operand2 = 0;
+        operation = null;
+        state = states.start;
+      }
+
+      function clearEntryPressed()
+      {
+        setValue(0);
+        state = (state == states.operand2) ? states.operator : states.start;
+      }
+
+      function numberPressed(n)
+      {
+        var value = getValue();
+
+        if (state == states.start || state == states.complete) {
+          value = n;
+          state = (n == '0' ? states.start : states.operand1);
+        } else if (state == states.operator) {
+          value = n;
+          state = states.operand2;
+        } else if (value.replace(/[-\.]/g, '').length < 8) {
+          value += n;
+        }
+
+        value += "";
+
+        setValue(value);
+      }
+
+      function decimalPressed()
+      {
+        if (getValue().includes('.')) {
+          return;
+        }
+
+        if (state == states.start || state == states.complete) {
+          setValue('0.');
+          state = states.operand1;
+        } else if (state == states.operator) {
+          setValue('0.');
+          state = states.operand2;
+        } else {
+          setValue(getValue() + '.');
+        }
+      }
+
+      function signPressed()
+      {
+        var value = getValue();
+
+        if (value != 0) {
+          setValue(-1 * value);
+        }
+      }
+
+      function operationPressed(op)
+      {
+        operand1 = getValue();
+        operation = op;
+        state = states.operator;
+      }
+
+      function equalPressed()
+      {
+        if (state < states.operand2) {
+          state = states.complete;
+          return;
+        }
+
+        if (state == states.operand2) {
+          operand2 = getValue();
+          state = states.complete;
+        } else if (state == states.complete) {
+          operand1 = getValue();
+        }
+
+        calculate(operand1, operand2, operation);
+      }
+
+      document.addEventListener('keypress', (event) => {
+        if (event.key.match(/^\d+$/)) {
+          numberPressed(event.key);
+        } else if (event.key == '.') {
+          decimalPressed();
+        } else if (event.key.match(/^[-*+/]$/)) {
+          operationPressed(event.key);
+        } else if (event.key == '=') {
+          equalPressed();
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div id="results">
+        <input type="text" id="result" value="0" />
+        <button id="sign" onClick="signPressed()">+/-</button>
+      </div>
+
+      <div id="loading" style="visibility:hidden"></div>
+
+      <div id="buttons">
+        <div>
+          <button id="clear" onClick="clearPressed()">C</button>
+          <button id="clearEntry" onClick="clearEntryPressed()">CE</button>
+        </div>
+
+        <div>
+          <button id="seven" onClick="numberPressed(7)">7</button>
+          <button id="eight" onClick="numberPressed(8)">8</button>
+          <button id="nine" onClick="numberPressed(9)">9</button>
+          <button id="divide" onClick="operationPressed('/')">&#247;</button>
+        </div>
+        <div>
+          <button id="four" onClick="numberPressed(4)">4</button>
+          <button id="five" onClick="numberPressed(5)">5</button>
+          <button id="six" onClick="numberPressed(6)">6</button>
+          <button id="multiply" onClick="operationPressed('*')">&#215;</button>
+        </div>
+        <div>
+          <button id="one" onClick="numberPressed(1)">1</button>
+          <button id="two" onClick="numberPressed(2)">2</button>
+          <button id="three" onClick="numberPressed(3)">3</button>
+          <button id="subtract" onClick="operationPressed('-')">-</button>
+        </div>
+        <div>
+          <button id="zero" onClick="numberPressed(0)">0</button>
+          <button id="decimal" onClick="decimalPressed()">.</button>
+          <button id="equal" onClick="equalPressed()">=</button>
+          <button id="add" onClick="operationPressed('+')">+</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

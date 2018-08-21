@@ -2,6 +2,8 @@ var express = require('express'),
   app = express(),
   port = 3000;
 
+app.use(express.static('public'));
+
 var routes = require("./api/routes");
 routes(app);
 
