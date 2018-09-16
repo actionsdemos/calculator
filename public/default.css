@@ -1,0 +1,139 @@
+BODY
+{
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    background-color: #1b4076;
+}
+
+@media screen and (min-device-width: 500px) and (min-device-height: 1024px)
+{
+    BODY
+    {
+        transform: scale(1.75);
+        transform-origin: 50% 0;
+        height: 50%;
+    }
+}
+
+@media screen and (min-device-width: 1024px) and (min-device-height: 1366px)
+{
+    BODY
+    {
+        transform: scale(2.0);
+        transform-origin: 50% 0;
+        height: 50%;
+    }
+}
+
+.container
+{
+    min-width: 250px;
+    min-height: 531px;
+    width: 250px;
+    padding: 25px;
+    margin: 0 auto;
+    position: relative;
+    background-image: url(background.png);
+    background-size: 300px 531px;
+    background-repeat: no-repeat;
+    background-position: center top;
+}
+
+#results
+{
+    position: relative;
+    top: 0;
+    left: 0;
+}
+
+#buttons
+{
+    position: relative;
+}
+
+#result
+{
+    background-color: #9b9b9b;
+    width: 226px;
+    height: 63px;
+    margin: 0;
+    padding: 0 12px;
+    position: absolute;
+    border: 0;
+    left: 0;
+    top: 32px;
+    font-family: system-ui;
+    font-size: 25px;
+    text-align: right;
+}
+
+BUTTON
+{
+    background-color: #d5d5d5;
+    border: 0;
+    border-radius: 0;
+    width: 55px;
+    height: 42px;
+    position: absolute;
+
+    font-size: 22px;
+}
+
+#sign, #clear
+{
+    font-size: 17px;
+}
+#clearEntry
+{
+    font-size: 15px;
+}
+
+#seven, #four, #one, #zero { left: 0px; }
+#sign, #eight, #five, #two, #decimal { left: 65px; }
+#clear, #nine, #six, #three, #equal { left: 130px; }
+#clearEntry, #divide, #multiply, #subtract, #add { left: 195px; }
+
+#sign, #clear, #clearEntry { top: 202px; }
+#seven, #eight, #nine, #divide { top: 255px; }
+#four, #five, #six, #multiply { top: 308px; }
+#one, #two, #three, #subtract { top: 361px; }
+#zero, #decimal, #equal, #add { top: 414px; }
+
+.resultchar
+{
+  display: inline-block;
+  width: 25px;
+  height: 45px;
+  background: url('digits.png') 0 0 no-repeat;
+  background-size: cover;
+  margin-top: 10px;
+  font: 0/0 Arial;
+  color: rgba(255,255,255,0);
+  text-indent: -9999px;
+  z-index: 1;
+}
+
+.digit0 { background-position: 0 0; }
+.digit1 { background-position: -25px 0; }
+.digit2 { background-position: -50px 0; }
+.digit3 { background-position: -75px 0; }
+.digit4 { background-position: -100px 0; }
+.digit5 { background-position: -125px 0; }
+.digit6 { background-position: -150px 0; }
+.digit7 { background-position: -175px 0; }
+.digit8 { background-position: -200px 0; }
+.digit9 { background-position: -225px 0; }
+
+.resultchar.decimal
+{
+  width: 7px;
+  background-position: -250px 0;
+}
+
+.resultchar.negative
+{
+  background-position: -257px 0;
+  width: 17px;
+}

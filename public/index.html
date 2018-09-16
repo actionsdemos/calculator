@@ -1,8 +1,12 @@
 <html>
   <head>
     <title>Pocket Calculator</title>
+    <link rel="stylesheet" href="default.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <script>
       'use strict';
+
+      var value = 0;
 
       var states = {
         "start": 0,
@@ -23,12 +27,32 @@
 
       function getValue()
       {
-        return document.getElementById("result").value;
+        return value;
       }
 
       function setValue(n)
       {
-        document.getElementById("result").value = n;
+        value = n;
+
+        var chars = value.toString().split("");
+        var html = "";
+
+        for (var c of chars) {
+          if (c == '-') {
+            html += "<span class=\"resultchar negative\">" + c + "</span>";
+          } else if (c == '.') {
+            html += "<span class=\"resultchar decimal\">" + c + "</span>";
+          } else {
+            html += "<span class=\"resultchar digit" + c + "\">" + c + "</span>";
+          }
+        }
+
+        document.getElementById("result").innerHTML = html;
+      }
+
+      function setError(n)
+      {
+        document.getElementById("result").innerHTML = "ERROR";
       }
 
       function setLoading(loading)
@@ -64,7 +88,7 @@
             uri += "?operation=divide";
             break;
           default:
-            setValue("ERROR");
+            setError();
             return;
         }
 
@@ -82,7 +106,7 @@
             var response = JSON.parse(http.responseText);
             setValue(response.result);
           } else {
-            setValue("ERROR");
+            setError();
           }
         };
         http.send(null);
@@ -189,10 +213,10 @@
       });
     </script>
   </head>
-  <body>
+  <body onLoad="setValue(0)">
     <div class="container">
       <div id="results">
-        <input type="text" id="result" value="0" />
+        <div id="result"><span class="digit0">0</span></div>
         <button id="sign" onClick="signPressed()">+/-</button>
       </div>
 
