@@ -140,7 +140,7 @@
           state = (n == '0' ? states.start : states.operand1);
         } else if (state == states.operator) {
           value = n;
-          state = states.operand2;
+          state = (n == '0' ? states.operator : states.operand2);
         } else if (value.replace(/[-\.]/g, '').length < 8) {
           value += n;
         }
