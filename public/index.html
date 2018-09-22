@@ -33,8 +33,19 @@
       function setValue(n)
       {
         value = n;
+        var displayValue = value;
 
-        var chars = value.toString().split("");
+        if (displayValue > 99999999) {
+          displayValue = displayValue.toExponential(4);
+        } else if (displayValue < -99999999) {
+          displayValue = displayValue.toExponential(4);
+        } else if (displayValue > 0 && displayValue < 0.0000001) {
+          displayValue = displayValue.toExponential(4);
+        } else if (displayValue < 0 && displayValue > -0.0000001) {
+          displayValue = displayValue.toExponential(3);
+        }
+
+        var chars = displayValue.toString().split("");
         var html = "";
 
         for (var c of chars) {
@@ -42,7 +53,9 @@
             html += "<span class=\"resultchar negative\">" + c + "</span>";
           } else if (c == '.') {
             html += "<span class=\"resultchar decimal\">" + c + "</span>";
-          } else {
+          } else if (c == 'e') {
+            html += "<span class=\"resultchar exponent\">e</span>";
+          } else if (c != '+') {
             html += "<span class=\"resultchar digit" + c + "\">" + c + "</span>";
           }
         }
