@@ -91,6 +91,14 @@ describe('Arithmetic', function() {
               done();
           });
     });
+    it('adds with negative exponent', function(done) {
+      request.get('/arithmetic?operation=add&operand1=1.2e-5&operand2=-1.2e-5')
+          .expect(200)
+          .end(function(err, res) {
+              expect(res.body).to.eql({ result: 0 });
+              done();
+          });
+    });
   });
 
   describe('Subtraction', function() {
@@ -174,6 +182,14 @@ describe('Arithmetic', function() {
           .expect(200)
           .end(function(err, res) {
               expect(res.body).to.eql({ result: 0.25 });
+              done();
+          });
+    });
+    it('multiplies supporting exponential notation', function(done) {
+      request.get('/arithmetic?operation=multiply&operand1=4.2e1&operand2=1e0')
+          .expect(200)
+          .end(function(err, res) {
+              expect(res.body).to.eql({ result: 42 });
               done();
           });
     });
