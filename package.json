@@ -23,13 +23,13 @@
   "author": "Edward Thomson <ethomson@microsoft.com>",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.16.3"
+    "express": "^4.16.4"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
+    "chai": "^4.2.0",
     "mocha": "^5.2.0",
     "mocha-junit-reporter": "^1.18.0",
     "mocha-multi-reporters": "^1.1.7",
-    "supertest": "^3.1.0"
+    "supertest": "^3.4.2"
   }
 }
