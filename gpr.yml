@@ -1,0 +1,22 @@
+name: Docker
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js 12.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
+    - name: package docker
+      run: |
+        VERSION=$(date +%s)
+        docker login docker.pkg.github.com --username ethomson --password ${{ secrets.GITHUB_TOKEN }}
+        docker build . --file Dockerfile --tag docker.pkg.github.com/ethomson/calculator/app:${VERSION}
+        docker push docker.pkg.github.com/ethomson/calculator/app:${VERSION}
+      env:
+        CI: true
