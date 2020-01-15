@@ -33,10 +33,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js {% raw %}${{ matrix.node-version }}{% endraw %}
       uses: actions/setup-node@v1
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: {% raw %}${{ matrix.node-version }}{% endraw %}
     - name: npm install, build, and test
       run: |
         npm ci
@@ -88,7 +88,7 @@ jobs:
       uses: azure/webapps-deploy@v1
       with: 
         app-name: calcjs
-        publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+        publish-profile: {% raw %}${{ secrets.AZURE_PUBLISH_PROFILE }}{% endraw %}
 ```
 
 ## Deploy container to GitHub Packages
@@ -117,7 +117,7 @@ jobs:
     - name: package docker
       run: |
         VERSION=$(date +%s)
-        docker login docker.pkg.github.com --username ethomson --password ${{ secrets.GITHUB_TOKEN }}
+        docker login docker.pkg.github.com --username ethomson --password {% raw %}${{ secrets.GITHUB_TOKEN }}{% endraw %}
         docker build . --file Dockerfile --tag docker.pkg.github.com/ethomson/calculator/app:${VERSION}
         docker push docker.pkg.github.com/ethomson/calculator/app:${VERSION}
       env:
