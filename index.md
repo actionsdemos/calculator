@@ -102,7 +102,10 @@ time in Unix format).
 ```yaml
 name: Docker
 
-on: [push]
+on:
+  release:
+    types:
+    - created    
 
 jobs:
   build:
@@ -117,7 +120,7 @@ jobs:
     - name: package docker
       run: |
         VERSION=$(date +%s)
-        docker login docker.pkg.github.com --username ethomson --password {% raw %}${{ secrets.GITHUB_TOKEN }}{% endraw %}
+        docker login docker.pkg.github.com --username ethomson --password {% raw %}${{ secrets.PACKAGE_PAT }}{% endraw %}
         docker build . --file Dockerfile --tag docker.pkg.github.com/ethomson/calculator/app:${VERSION}
         docker push docker.pkg.github.com/ethomson/calculator/app:${VERSION}
       env:
