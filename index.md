@@ -105,7 +105,7 @@ name: Docker
 on:
   release:
     types:
-    - created    
+    - created
 
 jobs:
   build:
@@ -120,9 +120,9 @@ jobs:
     - name: package docker
       run: |
         VERSION=$(date +%s)
-        docker login docker.pkg.github.com --username ethomson --password {% raw %}${{ secrets.PACKAGE_PAT }}{% endraw %}
-        docker build . --file Dockerfile --tag docker.pkg.github.com/ethomson/calculator/app:${VERSION}
-        docker push docker.pkg.github.com/ethomson/calculator/app:${VERSION}
+        docker login docker.pkg.github.com --username ${GITHUB_ACTOR} --password ${{ secrets.GITHUB_TOKEN }}
+        docker build . --file Dockerfile --tag docker.pkg.github.com/${GITHUB_REPOSITORY}/app:${VERSION}
+        docker push docker.pkg.github.com/${GITHUB_REPOSITORY}/app:${VERSION}
       env:
         CI: true
 ```
