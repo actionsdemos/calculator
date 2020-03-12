@@ -43,8 +43,8 @@ exports.calculate = function(req, res) {
     throw new Error("Invalid operand2: " + req.query.operand2);
   }
 
-  var operand1 = parseInt(req.query.operand1, 10);
-  var operand2 = parseInt(req.query.operand2, 10);
+  var operand1 = req.query.operand1.includes('.') ? parseFloat(req.query.operand1) : parseInt(req.query.operand1, 10);
+  var operand2 = req.query.operand2.includes('.') ? parseFloat(req.query.operand2) : parseInt(req.query.operand2, 10);
 
   res.json({ result: operation(operand1, operand2) });
 };
