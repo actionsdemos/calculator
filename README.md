@@ -12,5 +12,5 @@ output that can be presented in a continuous integration tool like
 To build, simply:
 
 1. Runs `npm install` to install dependencies.
-2. Runs `npm test` to run Mocha and execute the unit tests.
+2. Runs `npm test` to run Mocha and execute the unit tests
 
