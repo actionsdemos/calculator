@@ -9,7 +9,7 @@ exports.calculate = function(req, res) {
     res.status(400);
     res.json({ error: err.message });
   });
-//restore add function operators after error
+//restore add function operators after error - make a new pull
   var operations = {
     'add':      function(a,b) { return +a + + +b },
     'subtract': function(a,b) { return a - b },
