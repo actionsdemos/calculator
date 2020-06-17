@@ -11,6 +11,7 @@ exports.calculate = function(req, res) {
   });
 
   var operations = {
+    
     //Using +operator to coerce variables to numbers
     'add':      function(a,b) { return a + b },
     'subtract': function(a,b) { return a - b },
