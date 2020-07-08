@@ -17,7 +17,7 @@ exports.calculate = function(req, res) {
     'divide':   function(a,b) { return a / b },
   };
 
-  // Determine the operations
+  // Determine the operations.
 
   if (! req.query.operation) {
     throw new Error("Unspecified operation");
