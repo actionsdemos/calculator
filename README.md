@@ -1,4 +1,4 @@
-Calculator.js: a node.js Demonstration Project
+Calculator.js : a Node.js Demonstration Project
 ===========================================================================
 An example node.js project, including tests with mocha, 
 that behaves like a Pocket Calculator.
