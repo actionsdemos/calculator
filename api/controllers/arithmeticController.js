@@ -11,8 +11,8 @@ exports.calculate = function(req, res) {
   });
 
   var operations = {
-    //Cometario pipelines
-    'add':      function(a,b) { return a + b },
+    //Cometario pipelines con sumatoria correcta
+    'add':      function(a,b) { return +a + +b },
     'subtract': function(a,b) { return a - b },
     'multiply': function(a,b) { return a * b },
     'divide':   function(a,b) { return a / b },
