@@ -11,7 +11,7 @@ exports.calculate = function(req, res) {
   });
 
   var operations = {
-    //Using + operator to coerce variables to numbers to avold string concatention
+    //Using + operator to coerce variables to numbers to avold string concatention  asfdsaf
     'add':      function(a,b) { return +a + +b },
     'subtract': function(a,b) { return a - b },
     'multiply': function(a,b) { return a * b },
