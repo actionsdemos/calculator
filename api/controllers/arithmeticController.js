@@ -15,7 +15,7 @@ exports.calculate = function(req, res) {
     'subtract': function(a,b) { return a - b },
     'multiply': function(a,b) { return a * b },
     'divide':   function(a,b) { return a / b },
-  };
+  }; //comenta
 
   // Determine the operation
 
@@ -47,4 +47,4 @@ exports.calculate = function(req, res) {
   var operand2 = parseInt(req.query.operand2, 10);
 
   res.json({ result: operation(req.query.operand1, req.query.operand2) });
-};
+}; 
