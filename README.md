@@ -14,3 +14,4 @@ To build, simply:
 1. Runs `npm install` to install dependencies.
 2. Runs `npm test` to run Mocha and execute the unit tests.
 
+[![Build Status](https://dev.azure.com/luilima/parts%20unlimited/_apis/build/status/llima72.calculator%20(1)?branchName=master)](https://dev.azure.com/luilima/parts%20unlimited/_build/latest?definitionId=21&branchName=master)
