@@ -8,7 +8,9 @@ trigger:
 
 pool:
   name: az400_pool
-  demands:  az400_vm01
+  demands:
+  - agent.name -equals az400_vm01
+  
 
 steps:
 - task: NodeTool@0
