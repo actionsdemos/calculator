@@ -14,3 +14,4 @@ To build, simply:
 1. Runs `npm install` to install dependencies.
 2. Runs `npm test` to run Mocha and execute the unit tests.
 
+[![Build Status](https://dev.azure.com/LabUser-17184704/LabUser-17184704/_apis/build/status/JulianManzaneque.calculator?branchName=master)](https://dev.azure.com/LabUser-17184704/LabUser-17184704/_build/latest?definitionId=1&branchName=master)
