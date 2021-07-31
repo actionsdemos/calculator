@@ -7,7 +7,7 @@ trigger:
 - master
 
 pool:
-  name: ubuntu
+  name: Ubuntu
   demands:- agent.name -equals ubuntuagent
 
 steps:
