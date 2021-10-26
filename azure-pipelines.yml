@@ -1,7 +1,4 @@
 # Node.js with Angular
-- task: Npm@1
-  inputs:
-    command: 'install'
 # Build a Node.js project that uses Angular.
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
@@ -23,3 +20,6 @@ steps:
     npm install
     ng build --prod
   displayName: 'npm install and build'
+- task: Npm@1
+  inputs:
+    command: 'install'
