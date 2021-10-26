@@ -15,17 +15,7 @@ steps:
   inputs:
     versionSpec: '10.x'
   displayName: 'Install Node.js'
-- task: Npm@1
-  inputs:
-    command: 'install'
 
-- script: |
-    npm install -g @angular/cli
-    npm install
-    npm test
-    displayName: 'npm install, build, and test'
-    ng build --prod
-  displayName: 'npm install and build'
-  
+
 
  
