@@ -7,9 +7,9 @@ trigger:
 - master
 
 pool:
-    name: az400m05l05a-pool
+    name: pool
     demands:
-    - agent.name -equals az400m05-vm0
+    - agent.name -equals agent1
     
 steps:
 - task: NodeTool@0
