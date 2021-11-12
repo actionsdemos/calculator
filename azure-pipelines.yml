@@ -7,9 +7,7 @@ trigger:
 - master
 
 pool:
-    name: pool
-    demands:
-    - agent.name -equals agent1
+    name: Azure Pipelines
     
 steps:
 - task: NodeTool@0
