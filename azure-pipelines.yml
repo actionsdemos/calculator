@@ -7,7 +7,7 @@ trigger:
 - master
 
 pool:
-    name: pool
+    name: Azure Pipelines
     demands:
     - agent.name -equals agent1
     
