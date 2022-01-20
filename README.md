@@ -46,4 +46,7 @@ new
 
 line
 
+<<<<<<< HEAD
 d
+=======
+>>>>>>> master
