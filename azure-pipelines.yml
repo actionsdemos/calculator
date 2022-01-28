@@ -22,5 +22,4 @@ steps:
     echo Hello world
     echo the  change goes back all the way to github in the next building and come to trigger this  back again
     npm test
- npm test
- displayName: 'npm install, build, echo then test'
+  displayName: 'npm install, build, echo then test'
