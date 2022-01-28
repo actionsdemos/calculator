@@ -19,5 +19,6 @@ steps:
     npm install
     npm run build
     echo Hello world
+    echo the  change goes nack all the way to github in the next building and come to trigger this  back again
     npm test
   displayName: 'npm install and build and test'
