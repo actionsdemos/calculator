@@ -11,7 +11,7 @@ exports.calculate = function(req, res) {
   });
 
   var operations = {
-    ‘add’: function(a,b) { return a + b },
+    ‘add’: function(a,b) { return +a + +b },  //Use plus sign in order to prevent string concentination
     'subtract': function(a,b) { return a - b },
     'multiply': function(a,b) { return a * b },
     'divide':   function(a,b) { return a / b },
