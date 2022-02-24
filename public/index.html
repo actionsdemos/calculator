@@ -1,19 +1,22 @@
 <html>
   <head>
     <title>Pocket Calculator</title>
-    <link rel="stylesheet" href="default.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" href="default.css" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+    />
     <script>
-      'use strict';
+      "use strict";
 
       var value = 0;
 
       var states = {
-        "start": 0,
-        "operand1": 1,
-        "operator": 2,
-        "operand2": 3,
-        "complete": 4
+        start: 0,
+        operand1: 1,
+        operator: 2,
+        operand2: 3,
+        complete: 4,
       };
       var state = states.start;
 
@@ -25,13 +28,11 @@
       var operand2 = 0;
       var operation = null;
 
-      function getValue()
-      {
+      function getValue() {
         return value;
       }
 
-      function setValue(n)
-      {
+      function setValue(n) {
         value = n;
         var displayValue = value;
 
@@ -49,27 +50,25 @@
         var html = "";
 
         for (var c of chars) {
-          if (c == '-') {
-            html += "<span class=\"resultchar negative\">" + c + "</span>";
-          } else if (c == '.') {
-            html += "<span class=\"resultchar decimal\">" + c + "</span>";
-          } else if (c == 'e') {
-            html += "<span class=\"resultchar exponent\">e</span>";
-          } else if (c != '+') {
-            html += "<span class=\"resultchar digit" + c + "\">" + c + "</span>";
+          if (c == "-") {
+            html += '<span class="resultchar negative">' + c + "</span>";
+          } else if (c == ".") {
+            html += '<span class="resultchar decimal">' + c + "</span>";
+          } else if (c == "e") {
+            html += '<span class="resultchar exponent">e</span>';
+          } else if (c != "+") {
+            html += '<span class="resultchar digit' + c + '">' + c + "</span>";
           }
         }
 
         document.getElementById("result").innerHTML = html;
       }
 
-      function setError(n)
-      {
+      function setError(n) {
         document.getElementById("result").innerHTML = "ERROR";
       }
 
-      function setLoading(loading)
-      {
+      function setLoading(loading) {
         if (loading) {
           document.getElementById("loading").style.visibility = "visible";
         } else {
@@ -83,21 +82,20 @@
         }
       }
 
-      function calculate(operand1, operand2, operation)
-      {
+      function calculate(operand1, operand2, operation) {
         var uri = location.origin + "/arithmetic";
 
-        switch(operation) {
-          case '+':
+        switch (operation) {
+          case "+":
             uri += "?operation=add";
             break;
-          case '-':
+          case "-":
             uri += "?operation=subtract";
             break;
-          case '*':
+          case "*":
             uri += "?operation=multiply";
             break;
-          case '/':
+          case "/":
             uri += "?operation=divide";
             break;
           default:
@@ -112,7 +110,7 @@
 
         var http = new XMLHttpRequest();
         http.open("GET", uri, true);
-        http.onload = function() {
+        http.onload = function () {
           setLoading(false);
 
           if (http.status == 200) {
@@ -125,8 +123,7 @@
         http.send(null);
       }
 
-      function clearPressed()
-      {
+      function clearPressed() {
         setValue(0);
 
         previousOperand1 = 0;
@@ -138,23 +135,21 @@
         state = states.start;
       }
 
-      function clearEntryPressed()
-      {
+      function clearEntryPressed() {
         setValue(0);
-        state = (state == states.operand2) ? states.operator : states.start;
+        state = state == states.operand2 ? states.operator : states.start;
       }
 
-      function numberPressed(n)
-      {
+      function numberPressed(n) {
         var value = getValue();
 
         if (state == states.start || state == states.complete) {
           value = n;
-          state = (n == '0' ? states.start : states.operand1);
+          state = n == "0" ? states.start : states.operand1;
         } else if (state == states.operator) {
           value = n;
-          state = (n == '0' ? states.operator : states.operand2);
-        } else if (value.replace(/[-\.]/g, '').length < 8) {
+          state = n == "0" ? states.operator : states.operand2;
+        } else if (value.replace(/[-\.]/g, "").length < 8) {
           value += n;
         }
 
@@ -163,21 +158,19 @@
         setValue(value);
       }
 
-      function decimalPressed()
-      {
+      function decimalPressed() {
         if (state == states.start || state == states.complete) {
-          setValue('0.');
+          setValue("0.");
           state = states.operand1;
         } else if (state == states.operator) {
-          setValue('0.');
+          setValue("0.");
           state = states.operand2;
-        } else if (!getValue().toString().includes('.')) {
-          setValue(getValue() + '.');
+        } else if (!getValue().toString().includes(".")) {
+          setValue(getValue() + ".");
         }
       }
 
-      function signPressed()
-      {
+      function signPressed() {
         var value = getValue();
 
         if (value != 0) {
@@ -185,15 +178,13 @@
         }
       }
 
-      function operationPressed(op)
-      {
+      function operationPressed(op) {
         operand1 = getValue();
         operation = op;
         state = states.operator;
       }
 
-      function equalPressed()
-      {
+      function equalPressed() {
         if (state < states.operand2) {
           state = states.complete;
           return;
@@ -209,14 +200,14 @@
         calculate(operand1, operand2, operation);
       }
 
-      document.addEventListener('keypress', (event) => {
+      document.addEventListener("keypress", (event) => {
         if (event.key.match(/^\d+$/)) {
           numberPressed(event.key);
-        } else if (event.key == '.') {
+        } else if (event.key == ".") {
           decimalPressed();
         } else if (event.key.match(/^[-*+/]$/)) {
           operationPressed(event.key);
-        } else if (event.key == '=') {
+        } else if (event.key == "=") {
           equalPressed();
         }
       });
@@ -229,7 +220,7 @@
         <button id="sign" onClick="signPressed()">+/-</button>
       </div>
 
-      <div id="loading" style="visibility:hidden"></div>
+      <div id="loading" style="visibility: hidden"></div>
 
       <div id="buttons">
         <div>
@@ -238,15 +229,15 @@
         </div>
 
         <div>
-          <button id="seven" onClick="numberPressed(7)">7</button>
+          <button id="seven" onClick="numberPressed(7)">8</button>
           <button id="eight" onClick="numberPressed(8)">8</button>
-          <button id="nine" onClick="numberPressed(9)">9</button>
+          <button id="nine" onClick="numberPressed(9)">8</button>
           <button id="divide" onClick="operationPressed('/')">&#247;</button>
         </div>
         <div>
           <button id="four" onClick="numberPressed(4)">4</button>
-          <button id="five" onClick="numberPressed(5)">5</button>
-          <button id="six" onClick="numberPressed(6)">6</button>
+          <button id="five" onClick="numberPressed(5)">4</button>
+          <button id="six" onClick="numberPressed(6)">4</button>
           <button id="multiply" onClick="operationPressed('*')">&#215;</button>
         </div>
         <div>
