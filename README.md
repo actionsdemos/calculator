@@ -14,3 +14,4 @@ To build, simply:
 1. Runs `npm install` to install dependencies.
 2. Runs `npm test` to run Mocha and execute the unit tests.
 
+[![Build Status](https://dev.azure.com/hackcloudnative/calc-devops/_apis/build/status/hackcloudnative.calculator?branchName=master)](https://dev.azure.com/hackcloudnative/calc-devops/_build/latest?definitionId=3&branchName=master)
