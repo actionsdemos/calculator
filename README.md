@@ -3,6 +3,7 @@ Calculator.js: a node.js Demonstration Project
 An example node.js project, including tests with mocha, that behaves like
 a pocket calculator.
 
+[![Build Status](https://dev.azure.com/luisinformaticogonzalez/Integraci%C3%B3n%20de%20control%20de%20c%C3%B3digo%20fuente%20externo%20con%20Azure%20Pipe/_apis/build/status/Flowter.calculator?branchName=refs%2Fpull%2F1%2Fmerge)](https://dev.azure.com/luisinformaticogonzalez/Integraci%C3%B3n%20de%20control%20de%20c%C3%B3digo%20fuente%20externo%20con%20Azure%20Pipe/_build/latest?definitionId=2&branchName=refs%2Fpull%2F1%2Fmerge)
 The project contains a simple node.js application that exposes REST APIs
 to perform arithmetic on integers, and provides a test suite with mocha
 and chai.  The `mocha-junit-reporters` package is included to provide XML
