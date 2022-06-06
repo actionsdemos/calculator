@@ -7,12 +7,15 @@ trigger:
 - master
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-18.04'
+  name: default
+  demands: 
+  - agent.name -equals ubuntu01
 
 steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '10.x'
+    versionSpec: '8.x'
   displayName: 'Install Node.js'
 
 - script: |
