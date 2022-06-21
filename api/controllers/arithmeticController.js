@@ -18,6 +18,7 @@ exports.calculate = function(req, res) {
   };
 
   // Determine the operation
+  // Using + operator to type cast variables as integers in order to prevent string concatenation.
 
   if (! req.query.operation) {
     throw new Error("Unspecified operation");
