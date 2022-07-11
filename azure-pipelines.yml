@@ -17,6 +17,9 @@ steps:
 
 - script: |
     npm install
+    echo Install!
     npm run build
+    echo Run Build!
     npm test
+    echo Test!
   displayName: 'npm install, build, and test'
