@@ -1,7 +1,7 @@
 {
   "name": "calculator",
   "version": "1.0.0",
-  "description": "Calculator",
+  "description": "Calculator ",
   "repository": {
     "type": "git",
     "url": "https://github.com/azure-pipelines-samples/node.js"
