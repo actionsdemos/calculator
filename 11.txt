@@ -1,0 +1,45 @@
+PS /home/sureshbabu> Get-AzStorageAccount -ResourceGroupName practice_appdev_dev_RG -Name sureshbabustorage | Format-list
+
+AllowCrossTenantReplication       : True
+KeyCreationTime                   : Microsoft.Azure.Commands.Management.Storage.Models.PSKeyCreationTime
+KeyPolicy                         : 
+SasPolicy                         : 
+ResourceGroupName                 : practice_appdev_dev_RG
+StorageAccountName                : sureshbabustorage
+Id                                : /subscriptions/a118f0cc-4095-4943-b42b-21b474db8465/resourceGroups/practice_appdev_dev_RG/providers/Microsoft.Storage/storageAccounts/sureshbabustorage
+Location                          : westus2
+Sku                               : Microsoft.Azure.Commands.Management.Storage.Models.PSSku
+Kind                              : StorageV2
+Encryption                        : Microsoft.Azure.Management.Storage.Models.Encryption
+AccessTier                        : Hot
+CreationTime                      : 5/24/2022 5:04:11 PM
+CustomDomain                      : 
+Identity                          : 
+LastGeoFailoverTime               : 
+PrimaryEndpoints                  : Microsoft.Azure.Management.Storage.Models.Endpoints
+PrimaryLocation                   : westus2
+ProvisioningState                 : Succeeded
+SecondaryEndpoints                : 
+SecondaryLocation                 : 
+StatusOfPrimary                   : Available
+StatusOfSecondary                 : 
+Tags                              : {[ms-resource-usage, azure-cloud-shell]}
+EnableHttpsTrafficOnly            : True
+AzureFilesIdentityBasedAuth       : 
+EnableHierarchicalNamespace       : 
+FailoverInProgress                : 
+LargeFileSharesState              : 
+NetworkRuleSet                    : Microsoft.Azure.Commands.Management.Storage.Models.PSNetworkRuleSet
+RoutingPreference                 : 
+BlobRestoreStatus                 : 
+GeoReplicationStats               : 
+AllowBlobPublicAccess             : True
+MinimumTlsVersion                 : TLS1_2
+EnableNfsV3                       : 
+AllowSharedKeyAccess              : True
+ExtendedLocation                  : 
+PublicNetworkAccess               : Enabled
+ImmutableStorageWithVersioning    : 
+StorageAccountSkuConversionStatus : 
+Context                           : Microsoft.WindowsAzure.Commands.Common.Storage.LazyAzureStorageContext
+ExtendedProperties                : {}
