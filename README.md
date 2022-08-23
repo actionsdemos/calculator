@@ -4,6 +4,7 @@ An example node.js project, including tests with mocha, that behaves like
 a pocket calculator.
 
 The project contains a simple node.js application that exposes REST APIs
+[![Build Status](https://dev.azure.com/az400adrianoaos007/Integrating%20External%20Source%20Control%20with%20Azure%20Pipelines/_apis/build/status/adrianoaos.calculator?branchName=master)](https://dev.azure.com/az400adrianoaos007/Integrating%20External%20Source%20Control%20with%20Azure%20Pipelines/_build/latest?definitionId=7&branchName=master)
 to perform arithmetic on integers, and provides a test suite with mocha
 and chai.  The `mocha-junit-reporters` package is included to provide XML
 output that can be presented in a continuous integration tool like
