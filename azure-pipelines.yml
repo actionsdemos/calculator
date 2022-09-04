@@ -9,7 +9,7 @@ trigger:
 pool:
   name: az400m05l05a-pool
   demands:
-  - agent.name -equals az400m05l05a-pool
+  - agent.name -equals az400m05-vm0
   
 
 steps:
