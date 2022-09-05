@@ -22,4 +22,4 @@ steps:
     npm install
     npm run build
     npm test
-  displayName: 'npm install, build , test'
+  displayName: 'npm install, build , test, updated'
