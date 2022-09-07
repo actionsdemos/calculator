@@ -5,6 +5,7 @@
 
 trigger:
 - master
+- addition-cleanup
 
 pool:
   vmImage: ubuntu-latest
