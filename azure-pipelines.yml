@@ -4,8 +4,10 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
 
 trigger:
-- master
-- addition-cleanup
+  branches:
+    include:
+    - main
+    - addition-cleanup
 
 pool:
   vmImage: ubuntu-latest
