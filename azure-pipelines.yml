@@ -13,10 +13,10 @@ steps:
 - task: NodeTool@0
   inputs:
     versionSpec: '10.x'
-   npm test
  displayName: 'npm install, build, and test'
 
 - script: |
     npm install
     npm run build
-  displayName: 'npm install and build'
+    npm test
+ displayName: 'npm install, build, and test'
