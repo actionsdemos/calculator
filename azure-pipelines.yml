@@ -13,7 +13,7 @@ steps:
 - script: echo Hello, world!
           echo Hello, from Jason!
           echo Hello, again from Jason!
-  displayName: 'Run a one-line script'
+  displayName: 'Run a multi-line script'
 
 - script: |
     echo Add other tasks to build, test, and deploy your project.
