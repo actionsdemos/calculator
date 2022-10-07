@@ -7,7 +7,9 @@ trigger:
 - master
 
 pool:
-  vmImage: windows-latest
+  name: Default
+  demands:
+   - agent.name -equals LAPTOP-E4QSL5CN
 
 steps:
 - task: NodeTool@0
