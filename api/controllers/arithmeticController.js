@@ -30,7 +30,6 @@ exports.calculate = function(req, res) {
   }
 
   // Validate operands
- //
 
   if (! req.query.operand1 ||
       ! req.query.operand1.match(/^(-)?[0-9\.]+(e(-)?[0-9]+)?$/) ||
