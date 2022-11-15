@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/Rubendndev/Traject/_apis/build/status/Rubendndev.calculatordemo?branchName=refs%2Fpull%2F2%2Fmerge)](https://dev.azure.com/Rubendndev/Traject/_build/latest?definitionId=7&branchName=refs%2Fpull%2F2%2Fmerge)
+
 Calculator.js: a node.js Demonstration Project
 ==============================================
 An example node.js project, including tests with mocha, that behaves like
