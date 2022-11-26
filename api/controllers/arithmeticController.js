@@ -11,7 +11,8 @@ exports.calculate = function(req, res) {
   });
 
   var operations = {
-    'add':      function(a,b) { return +a + +b },
+    'add': function(a,b) { return +a + +b },
+     // Using + operator to type cast variables as integers in order to prevent string concatenation
     'subtract': function(a,b) { return a - b },
     'multiply': function(a,b) { return a * b },
     'divide':   function(a,b) { return a / b },
@@ -29,7 +30,7 @@ exports.calculate = function(req, res) {
     throw new Error("Invalid operation: " + req.query.operation);
   }
 
-  // Validate operands
+  // Validate operandsg
 
   if (! req.query.operand1 ||
       ! req.query.operand1.match(/^(-)?[0-9\.]+(e(-)?[0-9]+)?$/) ||
