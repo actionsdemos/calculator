@@ -1,0 +1,4 @@
+- name: PowerShell Hello World
+  # You may pin to the exact commit or the version.
+  # uses: rajbos/actions-testing@fea030e694f8655b37c5ffca75fa5902917906d8
+  uses: rajbos/actions-testing@v0.0.1
