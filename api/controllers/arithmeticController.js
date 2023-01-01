@@ -11,6 +11,7 @@ exports.calculate = function(req, res) {
   });
 
   //changed add function to 'return a + b' from 'return +a + +b'
+  // added addition-cleanup branch
   var operations = {
     'add':      function(a,b) { return +a + +b },
     'subtract': function(a,b) { return a - b },
