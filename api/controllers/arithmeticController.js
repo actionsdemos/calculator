@@ -17,6 +17,7 @@ exports.calculate = function(req, res) {
     'divide':   function(a,b) { return a / b },
   };
 
+
   // Determine the operation
 
   if (! req.query.operation) {
