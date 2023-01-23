@@ -12,7 +12,7 @@ on:
 jobs:
   build:
 
-    runs-on: RPI4
+    runs-on: self-hosted
 
     strategy:
       matrix:
