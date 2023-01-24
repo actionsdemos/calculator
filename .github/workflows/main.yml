@@ -1,0 +1,23 @@
+
+# Each workflow must have a name
+# Here the workflow will be named as Sample Workflow
+name: Sample workflow
+on: push 
+
+jobs: 
+  # name of the job to be shown in GitHub
+  first-job: 
+    # os in which the job will run
+    # Possible values are ubuntu-latest, windows-latest, ubuntu-16.04
+    # there might be many version.
+    runs-on: ubuntu-latest # required
+    # job specific env variables
+    # this env variables won't be available to second-job
+    env:
+      ENV_VAR: hello-world
+      SECOND_VAR: hello-world
+    # I will explain the steps separately. Generally steps are list of objects.
+ 
+      
+      
+      
