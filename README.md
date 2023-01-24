@@ -13,4 +13,5 @@ To build, simply:
 
 1. Runs `npm install` to install dependencies.
 2. Runs `npm test` to run Mocha and execute the unit tests.
+3. https://dev.azure.com/utajammal0516/Enabling%20Continuous%20Integration%20with%20Azure%20Pipelines/_apis/build/status/Enabling%20Continuous%20Integration%20with%20Azure%20Pipelines-ASP.NET-CI?branchName=master
 
