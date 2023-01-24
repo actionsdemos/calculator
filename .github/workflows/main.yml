@@ -1,23 +1,35 @@
+name: Sample Workflow
+on:
+  push: # enabling push event on master branch to fire the workflow
+    branches:
+      - master
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout out current code using public action
+        uses: actions/checkout@v2
+      - name: get the list of files in our current directory and its subdirectory
+        run: | # this | enables us to multiple commands, good for formatting
+          pwd
+          ls -alR
+  job2:
+    runs-on: ubuntu-latest
+    needs: [job1]
+    steps:
+      - name: print current files # this steps won't be showing any files as we didn't checkout our codes
+        run: |
+          pwd
+          ls -alR
 
-# Each workflow must have a name
-# Here the workflow will be named as Sample Workflow
-name: Sample workflow
-on: push 
-
-jobs: 
-  # name of the job to be shown in GitHub
-  first-job: 
-    # os in which the job will run
-    # Possible values are ubuntu-latest, windows-latest, ubuntu-16.04
-    # there might be many version.
-    runs-on: ubuntu-latest # required
-    # job specific env variables
-    # this env variables won't be available to second-job
-    env:
-      ENV_VAR: hello-world
-      SECOND_VAR: hello-world
-    # I will explain the steps separately. Generally steps are list of objects.
- 
-      
+  job3:
+    runs-on: ubuntu-latest
+    steps:
+      - name: print env variables
+        run: echo $VAR1 $VAR2 $VAR3
+        env:
+          VAR1: Thank you
+          VAR2: very much.
+          VAR3: Enjoy !!!
       
       
