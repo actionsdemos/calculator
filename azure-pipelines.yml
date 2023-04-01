@@ -7,7 +7,7 @@ trigger:
 - master
 
 pool:
-  vmImage: az400m05-vm0
+  name: az400m05l05a-pool
 
 steps:
 - task: NodeTool@0
