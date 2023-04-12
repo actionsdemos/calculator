@@ -16,6 +16,10 @@ steps:
 
 - script: |
     npm install
+  displayName: 'npm install'
+- script: |
     echo start building
+  displayName: 'echo'
+- script: |
     npm run build
-  displayName: 'npm install and build'
+  displayName: 'npm build'
