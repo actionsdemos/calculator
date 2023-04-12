@@ -15,7 +15,8 @@ steps:
   displayName: 'Install Node.js'
 
 - script: |
-    npm install
+    echo Satarting install...
+    npm audit fix --force
   displayName: 'npm install'
 - script: |
     echo start building
@@ -23,3 +24,6 @@ steps:
 - script: |
     npm run build
   displayName: 'npm build'
+- script: |
+    npm test
+  displayName: 'npm test'
