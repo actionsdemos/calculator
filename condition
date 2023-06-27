@@ -1,0 +1,1 @@
+${{ if or(eq(parameters.environment, 'dev'), eq(parameters.environment, 'tst')) }}
