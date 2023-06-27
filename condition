@@ -1,1 +1,11 @@
-${{ if or(eq(parameters.environment, 'dev'), eq(parameters.environment, 'tst')) }}
+- name: region
+    displayName: CWP Region
+    type: string
+    default: Please select environment Central or East
+    values: ${{ if or(eq(parameters.environment, 'dev'), eq(parameters.environment, 'tst')) }} # Check if environment is 'dev' or 'tst'
+      - central # Show only 'central' region for 'dev' or 'tst' environment
+    ${{ else }} # If environment is not 'dev' or 'tst', show all regions
+      - central
+      - east
+      - both
+    ${{ endif }}
