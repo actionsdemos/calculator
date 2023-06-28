@@ -9,3 +9,5 @@
       - east
       - both
     ${{ endif }}
+
+${{ if or(eq(parameters.environment, 'dev'), eq(parameters.environment, 'tst')) }}central${{ else }}${{ if eq(parameters.environment, 'both') }}central, east${{ else }}east${{ endif }}${{ endif }}
