@@ -1,33 +1,27 @@
+name: $[variables('Build.SourceBranchName')])_$(Rev:r)
+
 trigger:
   - none
 
 pool:
   name: Portal21
 
-parameters:
-  - name: environment
-    displayName: CWP environment
-    type: string
-    default: Please select environment
-    values:
-      - Please select environment
-      - dev
-      - ts1
-      - ts2
-      - ts3
-      - stg
-      - prf
-      - tst
-      - cte
+variables:
+  environment: 'Please select environment'
+  region: 'Please select environment Central or East'
 
-  - name: region
-    displayName: CWP Region
-    type: string
-    default: Please select environment Central or East
-    values:
-      - central
-      - east
-      - both
+  environmentValues:
+    - 'Please select environment'
+    - 'dev'
+    - 'ts1'
+    - 'ts2'
+    - 'ts3'
+    - 'stg'
+    - 'prf'
+    - 'tst'
+    - 'cte'
+
+  regionValues: $[ if(contains(variables['environment'], 'dev') or contains(variables['environment'], 'tst'), 'central', 'both') ]
 
 steps:
   - checkout: self
@@ -41,21 +35,21 @@ steps:
   - task: AzureKeyVault@1
     inputs:
       azureSubscription: "MemberPortalNonProdServicePrincipalConnection"
-      KeyVaultName: "mbr-portal-${{ parameters.environment }}-us-c-kv"
+      KeyVaultName: "mbr-portal-${{ variables.environment }}-us-c-kv"
       SecretsFilter: "OCP-APIM-SUBSCRIPTION"
       RunAsPreJob: true
 
   - task: Npm@1
     inputs:
       command: "custom"
-      customCommand: run build validate $(Build.Repository.LocalPath)/igniset /subscriptions/MemberPortalNonProdServicePrincipalConnection/resourceGroups/mbr-portal-c-datafactory/providers/Microsoft.DataFactory/factories/configserviceadfdev-demo
+      customCommand: "run build validate $(Build.Repository.LocalPath)/igniset /subscriptions/MemberPortalNonProdServicePrincipalConnection/resourceGroups/mbr-portal-c-datafactory/providers/Microsoft.DataFactory/factories/configserviceadfdev-demo"
     displayName: Validate
 
   - task: Npm@1
     inputs:
-      command: custom
+      command: "custom"
       workingDir: $(Build.Repository.LocalPath)
-      customCommand: run build export $(Build.Repository.LocalPath)/igniset /subscriptions/MemberPortalNonProdServicePrincipalConnection/resourceGroups/mbr-portal-c-datafactory/providers/Microsoft.DataFactory/factories/configserviceadfdev-demo 'ArmTemplate'
+      customCommand: "run build export $(Build.Repository.LocalPath)/igniset /subscriptions/MemberPortalNonProdServicePrincipalConnection/resourceGroups/mbr-portal-c-datafactory/providers/Microsoft.DataFactory/factories/configserviceadfdev-demo 'ArmTemplate'"
       displayName: Validate and Generate ARM template
 
   - task: PublishBuildArtifacts@1
@@ -64,19 +58,19 @@ steps:
       PathtoPublish: $(Build.Repository.LocalPath)/ArmTemplate
       ArtifactName: ArmTemplate
 
-  - ${{ if or(eq(parameters.environment, 'dev'), eq(parameters.environment, 'tst')) }}:
-    - task: AzureResourceManagerTemplateDeployment@3
-      inputs:
-        ConnectedServiceName: Azure Non Prod
-        azureSubscription: MemberPortalNonProdServicePrincipalConnection
-        ResourceGroupName: mbr-portal-${{ parameters.environment }}-us-c-rg
-        Location: Central US
-        templateLocation: Linked artifact
-        csmFile: $(Build.Repository.LocalPath)/ArmTemplate/ARMTemplateForFactory.json
-        csmParametersFile: $(Build.Repository.LocalPath)/ArmTemplate/ARMTemplateParametersForFactory.json
-        overrideParameters:
-          - factoryName mbrconfigservicedf-${{ parameters.environment }}
-          - triggerswhenexceluploaded_properties_typeProperties_scope /subscriptions/83ff40db-93fd-4781-8d9a-20c8e6eb9b55/resourceGroups/mbr-portal-${{ parameters.environment }}-us-c-rg/providers/Microsoft.Storage/storageAccounts/mbrconfigdf${{ parameters.environment }}uscst
-          - default_properties_ENV_value ${{ parameters.environment }}-
-          - default_properties_SUBSCRIPTION_KEY_value $(OCP-APIM-SUBSCRIPTION)
-          - mbrconfigservicedfkeyvaultlink_properties_typeProperties_baseUrl https
+  - task: AzureResourceManagerTemplateDeployment@3
+    inputs:
+      ConnectedServiceName: Azure Non Prod
+      azureSubscription: MemberPortalNonProdServicePrincipalConnection
+      ResourceGroupName: "mbr-portal-${{ variables.environment }}-us-c-rg"
+      Location: Central US
+      templateLocation: Linked artifact
+      csmFile: "$(Build.Repository.LocalPath)/ArmTemplate/ARMTemplateForFactory.json"
+      csmParametersFile: "$(Build.Repository.LocalPath)/ArmTemplate/ARMTemplateParametersForFactory.json"
+      overrideParameters:
+        - "factoryName mbrconfigservicedf-${{ variables.environment }}"
+        - "triggerswhenexceluploaded_properties_typeProperties_scope /subscriptions/83ff40db-93fd-4781-8d9a-20c8e6eb9b55/resourceGroups/mbr-portal-${{ variables.environment }}-us-c-rg/providers/Microsoft.Storage/storageAccounts/mbrconfigdf${{ variables.environment }}uscst"
+        - "default_properties_ENV_value ${{ variables.environment }}-"
+        - "default_properties_SUBSCRIPTION_KEY_value $(OCP-APIM-SUBSCRIPTION)"
+        - "mbrconfigservicedfkeyvaultlink_properties_typeProperties_baseUrl https://mbr-portal-${{ variables.environment }}-us-c-kv.vault.azure.net"
+        - "mbrconfigservicedfbloblink_properties_typeProperties_connectionString_secret"
