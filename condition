@@ -10,3 +10,15 @@ variables:
     region: 'central, east'
   ${{ else }} :
     region: 'east'
+
+
+#!/bin/bash
+
+if [ "$environment" == "dev" ] || [ "$environment" == "tst" ]; then
+    region="central"
+else
+    region="central east dev"
+fi
+
+# Use the "region" variable in your script or command
+echo "Region: $region"
