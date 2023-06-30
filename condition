@@ -32,3 +32,18 @@ echo "Region: $region"
         echo "Invalid combination: TST environment cannot be deployed to both regions."
         exit 1
       fi
+
+
+variables:
+    - name: myvar
+      value: ${{ parameters.image}}
+    steps:
+    
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: |
+          # Write your PowerShell commands here.
+          
+          Write-Host "Hello World"
+      condition: or( eq(variables.myvar, 'ubuntu-latest'), eq(variables.myvar, 'windows-latest') )
