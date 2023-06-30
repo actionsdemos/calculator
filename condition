@@ -22,3 +22,13 @@ fi
 
 # Use the "region" variable in your script or command
 echo "Region: $region"
+
+
+- script: |
+      if [ "$(environment)" == "dev" ] && [ "$(region)" == "east" ]; then
+        echo "Invalid combination: Dev environment cannot be deployed to the East region."
+        exit 1
+      elif [ "$(environment)" == "tst" ] && [ "$(region)" == "both" ]; then
+        echo "Invalid combination: TST environment cannot be deployed to both regions."
+        exit 1
+      fi
