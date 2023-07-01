@@ -1,0 +1,70 @@
+name: GitHub Actions Workflow
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Use Node 16.19.1
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.19.1'
+
+      - name: Use Yarn 1.x
+        run: npm install -g yarn@1.x
+
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Run quality checks for Pull Requests
+        run: |
+          echo "===== Running type checks ====="
+          yarn check-types
+
+          echo "===== Running format checks ====="
+          yarn format:check
+
+          echo "===== Running lint ====="
+          yarn lint
+        if: github.event_name == 'pull_request'
+
+      - name: Build WebApp
+        run: yarn build
+        if: github.event_name != 'pull_request'
+
+      - name: Install Prod Dependencies
+        run: yarn workspaces focus --production
+        if: github.event_name != 'pull_request'
+
+      - name: Copy Prod Files
+        uses: actions/upload-artifact@v2
+        with:
+          name: drop
+          path: |
+            .yarn/**
+            .next/**
+            .yarnrc.yml
+            yarn.lock
+            node_modules/**
+            public/**
+            package.json
+            ecosystem.config.js
+            next.config.js
+        if: github.event_name != 'pull_request'
+
+      - name: Archive Prod Files
+        run: |
+          cd ${{ github.workspace }}
+          zip -r $(Build.BuildId).zip .
+        if: github.event_name != 'pull_request'
+
+      - name: Publish Prod Files
+        uses: actions/upload-artifact@v2
+        with:
+          name: drop
+          path: ${{ github.workspace }}/*.zip
+        if: github.event_name != 'pull_request'
