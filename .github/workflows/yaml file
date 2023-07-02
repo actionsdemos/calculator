@@ -102,5 +102,3 @@ jobs:
             package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
             startup-command: 'yarn start'
             resource-group-name: 'mbr-portal-${{ ENV.environment }}-us-c-rg'
-
-         
