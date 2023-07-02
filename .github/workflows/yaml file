@@ -1,0 +1,106 @@
+name: Azure Web App deployment
+on:
+  push: 
+        inputs:
+        environment:
+        description: 'CWP Environment'
+        default: 'dev'
+        type: choice
+       options:
+          - dev
+          - ts1
+          - ts2
+          - ts3
+          - stg
+          - prf
+          - cte
+          - tst
+       region:
+        description: CWP Region
+        default: 'central'
+        type: choice
+        options:
+           - central
+           - east
+           - both
+env:
+  ENVIRONMENT: ${{ github.event.inputs.environment }}
+  BRANCH: ${{ github.event.inputs.branch }}
+jobs:
+  BuildandDeploy:
+     name: 'Build and Deployment' 
+     runs-on: [uhg-runner]
+     steps: 
+       - name: Checkout Repository
+         uses: actions/checkout@v3.5.3
+         with:
+           repository: ${{github.repository}}
+           
+       - name: Login to Azure
+         uses: azure/login@v1
+         continue-on-error: false
+         with:
+          creds: ${{ secrets.SERVICEPRINCIPAL }}
+          
+       - name: Setup Node.js environment
+         uses: actions/setup-node@v2.5.2
+         with:
+            always-auth: false
+            node-version: 16.19.1
+       - name: Use Yarn 1.x
+         run: npm install -g yarn@1.x
+ 
+       - name: Install Dependencies
+         run: yarn install
+
+       - name: Run quality checks for Pull Requests
+         run: |
+                yarn check-types
+                yarn format:check
+                echo "===== Running lint ====="
+                yarn lint
+                if: github.event_name == 'pull_request'
+       - name: Build WebApp
+         run: yarn build
+         if: github.event_name != 'pull_request'
+       - name: Install Prod Dependencies
+         run: yarn workspaces focus --production
+         if: github.event_name != 'pull_request'
+       - name: Copy Prod Files
+         uses: actions/upload-artifact@v2
+         with:
+            name: drop
+            path: |
+              .yarn/**
+              .next/**
+              .yarnrc.yml
+              yarn.lock
+              node_modules/**
+               public/**
+              package.json
+              ecosystem.config.js
+              next.config.js
+         if: github.event_name != 'pull_request'
+       - name: Archive Prod Files
+         run: |
+            cd ${{ github.workspace }}
+            zip -r $(Build.BuildId).zip .
+         if: github.event_name != 'pull_request'
+       - name: Publish Prod Files
+         uses: actions/upload-artifact@v2
+         with:
+            name: drop
+            path: ${{ github.workspace }}/*.zip
+         if: github.event_name != 'pull_request              
+       - name: Azure WebApp
+         uses: Azure/webapps-deploy@v2.2.10
+         with:
+      # Name of the Azure Web App
+            app-name: 'mbr-portal-cfga-${{ ENV.environment }}-us-c-webapp'
+            publish-profile: ${{ secrets.AzureAppService_PublishProfile_a5651b38972e4899b92de9bf50e16862 }}
+            slot-name: 'production' 
+            package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+            startup-command: 'yarn start'
+            resource-group-name: 'mbr-portal-${{ ENV.environment }}-us-c-rg'
+
+         
