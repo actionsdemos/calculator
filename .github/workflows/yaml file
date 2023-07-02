@@ -1,28 +1,30 @@
 name: Azure Web App deployment
 on:
-  push: 
-        inputs:
-        environment:
-        description: 'CWP Environment'
-        default: 'dev'
-        type: choice
-       options:
-          - dev
-          - ts1
-          - ts2
-          - ts3
-          - stg
-          - prf
-          - cte
-          - tst
-       region:
-        description: CWP Region
-        default: 'central'
-        type: choice
-        options:
-           - central
-           - east
-           - both
+  push:
+    branches:
+       - github_actions
+         inputs:
+                environment:
+                description: 'CWP Environment'
+                default: 'dev'
+                type: choice
+                options:
+                    - dev
+                    - ts1
+                    - ts2
+                    - ts3
+                    - stg
+                    - prf
+                    - cte
+                    - tst
+                region:
+                  description: CWP Region
+                  default: 'central'
+                  type: choice
+                  options:
+                     - central
+                     - east
+                     - both
 env:
   ENVIRONMENT: ${{ github.event.inputs.environment }}
   BRANCH: ${{ github.event.inputs.branch }}
