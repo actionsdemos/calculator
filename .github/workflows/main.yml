@@ -1,4 +1,4 @@
-name: $(Build.SourceBranchName)_$(Rev:r)
+name: Config_graph_Web_App
 on:
   workflow_dispatch: 
     inputs:
@@ -62,10 +62,10 @@ jobs:
                 if: github.event_name == 'pull_request'
        - name: Build WebApp
          run: yarn build
-         
+         if: github.event_name != 'pull_request'
        - name: Install Prod Dependencies
          run: yarn workspaces focus --production
-         
+         if: github.event_name != 'pull_request'
        - name: Copy Prod Files
          uses: actions/upload-artifact@v2
          with:
@@ -80,18 +80,18 @@ jobs:
               package.json
               ecosystem.config.js
               next.config.js
-         
+         if: github.event_name != 'pull_request'
        - name: Archive Prod Files
          run: |
             cd ${{ github.workspace }}
             zip -r $(Build.BuildId).zip .
-         
+         if: github.event_name != 'pull_request'
        - name: Publish Prod Files
          uses: actions/upload-artifact@v2
          with:
             name: drop
             path: ${{ github.workspace }}/*.zip
-                  
+         if: github.event_name != 'pull_request              
        - name: Azure WebApp
          uses: Azure/webapps-deploy@v2.2.10
          with:
