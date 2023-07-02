@@ -31,7 +31,7 @@ env:
 jobs:
   BuildandDeploy:
      name: 'Build and Deployment' 
-     runs-on: [uhg-runner]
+     runs-on: ubuntu-latest
      steps: 
        - name: Checkout Repository
          uses: actions/checkout@v3.5.3
