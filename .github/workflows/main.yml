@@ -49,9 +49,6 @@ jobs:
             node-version: 16.19.1
        - name: Use Yarn 1.x
          run: npm install -g yarn@1.x
- 
-       - name: Install Dependencies
-         run: yarn install
 
        - name: Run quality checks for Pull Requests
          run: |
