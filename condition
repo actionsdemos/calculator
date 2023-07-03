@@ -96,9 +96,9 @@ steps:
     displayName: 'Showing variables'
 
   - bash: |
-      if [[ ("${{ parameters.environment }}" == "dev" || "${{ parameters.environment }}" == "tst") && "${{ parameters.region }}" == "east" ]]; then
-        echo "Dev and tst are unavailable for this YAML file. Aborting the Pipeline."
-        exit 1
+      if [[ "${{ parameters.environment }}" == "dev" || "${{ parameters.environment }}" == "tst" && "${{ parameters.region }}" == "east" ]]; then
+        echo "Dev and tst are unavailable in the east region. Changing the region to central."
+        echo "##vso[task.setvariable variable=region]central"
       fi
     displayName: 'Check condition'
 
