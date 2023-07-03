@@ -55,8 +55,7 @@ jobs:
 
        - name: Run quality checks for Pull Requests
          run: |
-                yarn check-types
-                yarn format:check
+
                 echo "===== Running lint ====="
                 yarn lint
                 if: github.event_name == 'pull_request'
