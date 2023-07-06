@@ -10,7 +10,7 @@ steps:
     shell: bash
 
   - name: 'Run quality checks for Pull Requests'
-    if: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+    if: ${{ success() && github.event_name != 'pull_request' }}
     run: |
       echo "===== Running type checks ====="
       yarn check-types
@@ -26,7 +26,7 @@ steps:
     run: yarn build
 
   - name: 'Install Prod Dependencies'
-    if: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    if: ${{ success() && github.event_name != 'pull_request' }}
     run: yarn workspaces focus --production
 
   - name: 'Copy Prod Files'
