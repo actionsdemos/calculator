@@ -1,0 +1,71 @@
+steps:
+  - task: UseNode@1
+    displayName: 'Use Node 16.19.1'
+    inputs:
+      version: '16.19.1'
+      checkLatest: true
+
+  - task: YarnInstaller@3
+    displayName: 'Use Yarn 1.x'
+    inputs:
+      versionSpec: '1.x'
+      checkLatest: true
+
+  - script: yarn install
+    displayName: 'Install Dependencies'
+
+  - script: |
+      echo "===== Running type checks ====="
+      yarn check-types
+
+      echo "===== Running format checks ====="
+      yarn format:check
+
+      echo "===== Running lint ====="
+      yarn lint
+    displayName: 'Run quality checks for Pull Requests'
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+
+  - script: |
+      yarn build
+    displayName: 'Build WebApp'
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+
+  - script: |
+      yarn workspaces focus --production
+    displayName: 'Install Prod Dependencies'
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+
+  - task: CopyFiles@2
+    displayName: 'Copy Prod Files'
+    inputs:
+      Contents: |
+        .yarn/**
+        .next/**
+        .yarnrc.yml
+        yarn.lock
+        node_modules/**
+        public/**
+        package.json
+        ecosystem.config.js
+        next.config.js
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+
+  - task: ArchiveFiles@2
+    displayName: 'Archive Prod Files'
+    inputs:
+      rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
+      includeRootFolder: false
+      archiveType: 'zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+      replaceExistingArchive: true
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Prod Files'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+      ArtifactName: 'drop'
+      publishLocation: 'Container'
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
