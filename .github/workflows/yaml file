@@ -1,18 +1,17 @@
 steps:
-runs:
-  using: "composite"  
   - name: Setup node
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16.13.x
+    uses: actions/setup-node@v3
+    with:
+      node-version: 16.13.x
 
   - name: Install Dependencies
-      if: ${{ inputs.skip_install != 'true' }}
-      run: yarn install
-      shell: bash
+    if: ${{ inputs.skip_install != 'true' }}
+    run: yarn install
+    shell: bash
 
-
-  - script: |
+  - name: 'Run quality checks for Pull Requests'
+    if: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+    run: |
       echo "===== Running type checks ====="
       yarn check-types
 
@@ -21,23 +20,21 @@ runs:
 
       echo "===== Running lint ====="
       yarn lint
-    displayName: 'Run quality checks for Pull Requests'
-    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
 
-  - script: |
-      yarn build
-    displayName: 'Build WebApp'
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  - name: 'Build WebApp'
+    if: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    run: yarn build
 
-  - script: |
-      yarn workspaces focus --production
-    displayName: 'Install Prod Dependencies'
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  - name: 'Install Prod Dependencies'
+    if: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    run: yarn workspaces focus --production
 
-  - task: CopyFiles@2
-    displayName: 'Copy Prod Files'
-    inputs:
-      Contents: |
+  - name: 'Copy Prod Files'
+    if: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    uses: actions/upload-artifact@v2
+    with:
+      name: prod-files
+      path: |
         .yarn/**
         .next/**
         .yarnrc.yml
@@ -47,23 +44,17 @@ runs:
         package.json
         ecosystem.config.js
         next.config.js
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
 
-  - task: ArchiveFiles@2
-    displayName: 'Archive Prod Files'
-    inputs:
-      rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
-      includeRootFolder: false
-      archiveType: 'zip'
-      archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-      replaceExistingArchive: true
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  - name: 'Archive Prod Files'
+    if: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    uses: actions/upload-artifact@v2
+    with:
+      name: prod-archive
+      path: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
 
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Prod Files'
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-      ArtifactName: 'drop'
-      publishLocation: 'Container'
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  - name: 'Publish Prod Files'
+    if: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    uses: actions/upload-artifact@v2
+    with:
+      name: published-files
+      path: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
