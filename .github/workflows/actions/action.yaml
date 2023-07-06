@@ -22,7 +22,7 @@ steps:
       yarn lint
 
   - name: 'Build WebApp'
-    if: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    if: ${{ success() && github.event_name != 'pull_request' }}
     run: yarn build
 
   - name: 'Install Prod Dependencies'
@@ -30,7 +30,7 @@ steps:
     run: yarn workspaces focus --production
 
   - name: 'Copy Prod Files'
-    if: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    if: ${{ success() && github.event_name != 'pull_request' }}
     uses: actions/upload-artifact@v2
     with:
       name: prod-files
@@ -53,7 +53,7 @@ steps:
       path: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
 
   - name: 'Publish Prod Files'
-    if: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    if: ${{ success() && github.event_name != 'pull_request' }}
     uses: actions/upload-artifact@v2
     with:
       name: published-files
