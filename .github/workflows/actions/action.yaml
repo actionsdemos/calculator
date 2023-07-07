@@ -1,60 +1,20 @@
-steps:
-  - name: Setup node
-    uses: actions/setup-node@v3
-    with:
-      node-version: 16.13.x
-
-  - name: Install Dependencies
-    if: ${{ inputs.skip_install != 'true' }}
-    run: yarn install
-    shell: bash
-
-  - name: 'Run quality checks for Pull Requests'
-    if: ${{ success() && github.event_name != 'pull_request' }}
-    run: |
-      echo "===== Running type checks ====="
-      yarn check-types
-
-      echo "===== Running format checks ====="
-      yarn format:check
-
-      echo "===== Running lint ====="
-      yarn lint
-
-  - name: 'Build WebApp'
-    if: ${{ success() && github.event_name != 'pull_request' }}
-    run: yarn build
-
-  - name: 'Install Prod Dependencies'
-    if: ${{ success() && github.event_name != 'pull_request' }}
-    run: yarn workspaces focus --production
-
-  - name: 'Copy Prod Files'
-    if: ${{ success() && github.event_name != 'pull_request' }}
-    uses: actions/upload-artifact@v2
-    with:
-      name: prod-files
-      path: |
-        .yarn/**
-        .next/**
-        .yarnrc.yml
-        yarn.lock
-        node_modules/**
-        public/**
-        package.json
-        ecosystem.config.js
-        next.config.js
-
-  - name: 'Archive Prod Files'
-    if: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
-    uses: actions/upload-artifact@v2
-    with:
-      name: prod-archive
-      path: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
-
-  - name: 'Publish Prod Files'
-    if: ${{ success() && github.event_name != 'pull_request' }}
-    uses: actions/upload-artifact@v2
-    with:
-      name: published-files
-      path: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+runs:
+  using: "composite"  
+  steps:
+     - name: Checkout
+       uses: actions/checkout@v3.5.3
+     - name: Setup node
+       uses: actions/setup-node@v3
+       with:
+        node-version: 16.13.x
+     - name: Upload a Build Artifact
+       uses: actions/upload-artifact@v3.1.2
+       with:
+        name: 
+        path:   
+        Available Options:
+        warn: Output a warning but do not fail the action
+        error: Fail the action with an error message
+        ignore: Do not output any warnings or errors, the action does not fail
+        if-no-files-found: 
+         retention-days: # optional
