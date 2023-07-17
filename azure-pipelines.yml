@@ -1,22 +1,25 @@
-# Node.js
-# Build a general Node.js project with npm.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+curl --location --request POST 'https://prf-new.optumrx.com/skyline/token' \
+--header 'idp-type: onboarding-unauthenticated' \
+--header 'tenant-id: POR5' \
+--header 'Cookie: ASLBSA=000310e6a38cabf15bd8c701b45fb879045ba63ee0d9e3534221c793998daf1c9a77; ASLBSACORS=000310e6a38cabf15bd8c701b45fb879045ba63ee0d9e3534221c793998daf1c9a77' \
+--data ''
 
-trigger:
-- master
 
-pool:
-  vmImage: ubuntu-latest
 
-steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '10.x'
-  displayName: 'Install Node.js'
+curl --location --request POST 'https://prf-new.optumrx.com/skyline/token/validate' \
+--header 'access-token: <skyline-token>' \
+--header 'scope: onboarding-unauthenticated' \
+--header 'Cookie: ASLBSA=000310e6a38cabf15bd8c701b45fb879045ba63ee0d9e3534221c793998daf1c9a77; ASLBSACORS=000310e6a38cabf15bd8c701b45fb879045ba63ee0d9e3534221c793998daf1c9a77' \
+--data ''
 
-- script: |
-    npm install
-    npm run build
-    npm test
-  displayName: 'npm install, test and build'
+
+
+
+
+
+
+
+
+
+
+if auth-type is  skyline token and  idp-type equels to  onboarding-unauthenticated' , set new scope header with   onboarding-unauthenticated'   from the APIM.
