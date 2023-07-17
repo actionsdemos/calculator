@@ -1,0 +1,78 @@
+name: orx-cwp-config-service-webapp
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'CWP Environment'
+        type: choice
+        options:
+          - dev
+          - stg
+          - prf
+          - tst
+
+jobs:
+  BuildandDeploy:
+    name: 'Build and Deployment'
+    runs-on: [uhg-runner]
+
+    steps:
+      - name: setup
+        uses: optum-rx-consumer-digital/orx-cwp-config-service-webapp/.github/actions/setup@webapp_action
+        with:
+          repository: ${{ github.repository }}
+
+      - name: Production Build
+        run: yarn build
+
+      - name: Install Prod Dependencies
+        run: yarn workspaces focus --production
+
+      - name: Copy Prod Files
+        run: |
+          mkdir -p ${{ github.workspace }}/cfga_webapp
+          cp -rvf .yarn '${{ github.workspace }}/cfga_webapp'
+          cp -rvf .next '${{ github.workspace }}/cfga_webapp'
+          cp -rvf yarn.lock '${{ github.workspace }}/cfga_webapp'
+          cp -rvf node_modules '${{ github.workspace }}/cfga_webapp'
+          cp -rvf public '${{ github.workspace }}/cfga_webapp'
+          cp -rvf package.json '${{ github.workspace }}/cfga_webapp'
+          cp -rvf ecosystem.config.js '${{ github.workspace }}/cfga_webapp'
+          cp -rvf next.config.js '${{ github.workspace }}/cfga_webapp'
+
+      - name: Set App Name
+        id: set_app_name
+        run: echo "::set-output name=app_name::mbr-${{ inputs.environment }}"
+
+      - name: Set Publish Profile Secret
+        id: set_publish_profile_secret
+        run: |
+          case ${{ inputs.environment }} in
+            dev)
+              echo "::set-output name=publish_profile_secret::${{ secrets.DEV_AZURE_WEBAPP_PUBLISH_PROFILE }}"
+              ;;
+            stg)
+              echo "::set-output name=publish_profile_secret::${{ secrets.STG_AZURE_WEBAPP_PUBLISH_PROFILE }}"
+              ;;
+            prf)
+              echo "::set-output name=publish_profile_secret::${{ secrets.PRF_AZURE_WEBAPP_PUBLISH_PROFILE }}"
+              ;;
+            tst)
+              echo "::set-output name=publish_profile_secret::${{ secrets.TST_AZURE_WEBAPP_PUBLISH_PROFILE }}"
+              ;;
+          esac
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        continue-on-error: false
+        with:
+          creds: ${{ secrets.SERVICEPRINCIPAL }}
+
+      - name: Azure WebApp
+        uses: Azure/webapps-deploy@v2
+        with:
+          app-name: ${{ steps.set_app_name.outputs.app_name }}-us-c-webapp
+          slot-name: 'production'
+          package: '${{ github.workspace }}/cfga_webapp/'
+          publish-profile: ${{ steps.set_publish_profile_secret.outputs.publish_profile_secret }}
