@@ -1,97 +1,66 @@
-name: Config_graph_Web_App
+name: orx-cwp-config-service-webapp
 on:
-  workflow_dispatch: 
-    inputs:
-     environment:
+ workflow_dispatch:
+   inputs:
+    environment:
        description: 'CWP Environment'
-       default: 'dev'
        type: choice
        options:
           - dev
-          - ts1
-          - ts2
-          - ts3
           - stg
           - prf
-          - cte
           - tst
-     region:
-        description: CWP Region
-        default: 'central'
-        type: choice
-        options:
-           - central
-           - east
-           - both
-env:
-  ENVIRONMENT: ${{ github.event.inputs.environment }}
-  BRANCH: ${{ github.event.inputs.branch }}
+    region:
+       description: 'CWP Region'
+       type: choice
+       options:
+          - Central
+          - East     
 jobs:
   BuildandDeploy:
-     name: 'Build and Deployment' 
-     runs-on: ubuntu-latest
-     steps: 
-       - name: Checkout Repository
-         uses: actions/checkout@v3.5.3
-         with:
-           repository: ${{github.repository}}
-           
-       - name: Login to Azure
-         uses: azure/login@v1
-         continue-on-error: false
-         with:
+    name: 'Build and Deployment'
+    runs-on: [uhg-runner]
+    # needs: qualitychecks
+    steps:
+      - name: setup
+        uses: optum-rx-consumer-digital/orx-cwp-config-service-webapp/.github/actions/setup@webapp_action
+        with:
+          repository: ${{github.repository}}
+
+      - name: Production Build
+        run: yarn build
+
+      - name: Install Prod Dependencies
+        run: yarn workspaces focus --production
+
+      - name: Copy Prod Files
+        run: |
+          mkdir -p ${{ github.workspace }}/cfga_webapp
+          cp -rvf .yarn '${{ github.workspace }}/cfga_webapp'
+          cp -rvf .next '${{ github.workspace }}/cfga_webapp'
+          cp -rvf yarn.lock '${{ github.workspace }}/cfga_webapp'
+          cp -rvf node_modules '${{ github.workspace }}/cfga_webapp'
+          cp -rvf public '${{ github.workspace }}/cfga_webapp'
+          cp -rvf package.json '${{ github.workspace }}/cfga_webapp'
+          cp -rvf ecosystem.config.js '${{ github.workspace }}/cfga_webapp'
+          cp -rvf next.config.js '${{github.workspace }}/cfga_webapp'
+
+      #      - name: Archive Prod Files
+      #       run: |
+      #         cd ${{ github.workspace }}/cfga_webapp
+      #        zip -r ${{ github.run_id }}.zip .
+      #       ls -larth
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        continue-on-error: false
+        with:
           creds: ${{ secrets.SERVICEPRINCIPAL }}
-          
-       - name: Setup Node.js environment
-         uses: actions/setup-node@v2.5.2
-         with:
-            always-auth: false
-            node-version: 16.19.1
-       - name: Use Yarn 1.x
-         run: npm install -g yarn@1.x
 
-       - name: Run quality checks for Pull Requests
-         run: |
-
-                echo "===== Running lint ====="
-                yarn lint
-                if: github.event_name == 'pull_request'
-       - name: Build WebApp
-         run: yarn build
-       - name: Install Prod Dependencies
-         run: yarn workspaces focus --production
-       - name: Copy Prod Files
-         uses: actions/upload-artifact@v2
-         with:
-            name: drop
-            path: |
-              .yarn/**
-              .next/**
-              .yarnrc.yml
-              yarn.lock
-              node_modules/**
-               public/**
-              package.json
-              ecosystem.config.js
-              next.config.js
-       - name: Archive Prod Files
-         run: |
-            cd ${{ github.workspace }}
-            zip -r $(Build.BuildId).zip .
-       - name: Publish Prod Files
-         uses: actions/upload-artifact@v2
-         with:
-            name: drop
-            path: ${{ github.workspace }}/*.zip          
-       - name: Azure WebApp
-         uses: Azure/webapps-deploy@v2.2.10
-         with:
-      # Name of the Azure Web App
-            app-name: 'mbr-portal-cfga-${{ ENV.environment }}-us-c-webapp'
-            publish-profile: ${{ secrets.AzureAppService_PublishProfile_a5651b38972e4899b92de9bf50e16862 }}
-            slot-name: 'production' 
-            package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
-            startup-command: 'yarn start'
-            resource-group-name: 'mbr-portal-${{ ENV.environment }}-us-c-rg'
-
-         
+      - name: Azure WebApp
+        uses: Azure/webapps-deploy@v2
+        with:
+          app-name: 'mbr-portal-cfga-{{ inputs.environment }}-us-c-webapp'
+          slot-name: 'production'
+          package: '${{ github.workspace }}/cfga_webapp/'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
