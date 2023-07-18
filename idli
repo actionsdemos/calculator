@@ -1,0 +1,84 @@
+name: non-prod-cfga-webapp-deployment
+
+on:
+  #push:
+  #branches:
+  #- 'master'
+  workflow_run:
+    workflows: [CodeQL]
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select Environment'
+        required: true
+        type: choice
+        # default: 'dev'
+        options:
+          - dev
+          - tst
+          - prf
+          - stg
+
+jobs:
+  BuildandDeploy:
+    name: 'Build and Deployment'
+    runs-on: [uhg-runner]
+
+    steps:
+      - name: Set Publish Profile Secret
+        id: set_publish_profile_secret
+        run: |
+          if [[ "${{ inputs.environment }}" == dev ]]; then
+            echo "publish_profile_secret::${{ secrets.DEV_AZURE_WEBAPP_PUBLISH_PROFILE }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ inputs.environment }}" == tst ]]; then
+            echo "publish_profile_secret::${{ secrets.TST_AZURE_WEBAPP_PUBLISH_PROFILE }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ inputs.environment }}" == prf ]]; then
+            echo "publish_profile_secret::${{ secrets.PRF_AZURE_WEBAPP_PUBLISH_PROFILE }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ inputs.environment }}" == stg ]]; then
+            echo "publish_profile_secret::${{ secrets.STG_AZURE_WEBAPP_PUBLISH_PROFILE }}" >> $GITHUB_OUTPUT
+          else
+            echo "Invalid environment selected"
+            exit 1
+          fi
+
+      - name: setup
+        uses: optum-rx-consumer-digital/orx-cwp-config-service-webapp/.github/actions/setup@master
+        with:
+          repository: ${{ github.repository }}
+
+      - name: Production Build
+        run: yarn build
+
+      - name: Install Prod Dependencies
+        run: yarn workspaces focus --production
+
+      - name: Copy Prod Files
+        run: |
+          mkdir -p ${{ github.workspace }}/cfga_webapp
+          cp -rvf .yarn '${{ github.workspace }}/cfga_webapp'
+          cp -rvf .next '${{ github.workspace }}/cfga_webapp'
+          cp -rvf yarn.lock '${{ github.workspace }}/cfga_webapp'
+          cp -rvf node_modules '${{ github.workspace }}/cfga_webapp'
+          cp -rvf public '${{ github.workspace }}/cfga_webapp'
+          cp -rvf package.json '${{ github.workspace }}/cfga_webapp'
+          cp -rvf ecosystem.config.js '${{ github.workspace }}/cfga_webapp'
+          cp -rvf next.config.js '${{ github.workspace }}/cfga_webapp'
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        continue-on-error: false
+        with:
+          creds: ${{ secrets.SERVICEPRINCIPAL }}
+
+      - name: Azure WebApp Deploy
+        uses: Azure/webapps-deploy@v2
+        with:
+          app-name: mbr-portal-cfga-${{ inputs.environment }}-us-c-webapp
+          slot-name: 'production'
+          package: '${{ github.workspace }}/cfga_webapp/'
+          publish-profile: ${{ steps.set_publish_profile_secret.outputs.publish_profile_secret }}
+
+      - name: Cleanup cfga_webapp directory
+        run: rm -rf '${{ github.workspace }}/cfga_webapp'
