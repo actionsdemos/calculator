@@ -1,0 +1,3 @@
+
+
+if auth-type is  skyline token and  idp-type equals to  onboarding-unauthenticated' , set new scope header with   onboarding-unauthenticated'   from the APIM.
