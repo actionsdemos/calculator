@@ -28,7 +28,7 @@
                             <set-body>{"error": "Incorrect request headers"}</set-body>
                         </return-response>
                     </when>
-                    <otherwise />
+                    <otherwise></otherwise>
                 </choose>
             </when>
             <otherwise>
@@ -37,7 +37,7 @@
                         <!-- Send Authorization Header and Idp-type to Skyline Token -->
                         <send-request mode="new" response-variable-name="skyline-response" timeout="30" ignore-error="false">
                             <!-- This policy is added manually, so the skyline token url will change based on each env! -->
-                            <set-url>@("https://mbr-portal-skyline-dev-us-c-fn.azurewebsites.net/api/token/validate")</set-url>
+                            <set-url>@("https://mbr-portal-skyline-{{environment}}-us-c-fn.azurewebsites.net/api/token/validate")</set-url>
                             <set-method>POST</set-method>
                             <set-header name="Authorization" exists-action="override">
                                 <value>@(context.Request.Headers.GetValueOrDefault("Authorization"))</value>
@@ -70,15 +70,6 @@
                                 </claim>
                             </required-claims>
                         </validate-jwt>
-                    </when>
-                    <when condition="@(context.Request.Headers.GetValueOrDefault("auth-type", "").Equals("adf", StringComparison.OrdinalIgnoreCase))">
-                        <choose>
-                            <when condition="@(context.Request.Certificate == null || context.Request.Certificate.Verify()  || !context.Deployment.Certificates.Any(c => c.Value.Thumbprint == context.Request.Certificate.Thumbprint))">
-                                <return-response>
-                                    <set-status code="403" reason="Invalid client certificate" />
-                                </return-response>
-                            </when>
-                        </choose>
                     </when>
                     <otherwise>
                         <return-response>
