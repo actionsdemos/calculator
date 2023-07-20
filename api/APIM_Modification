@@ -16,6 +16,12 @@
             <value>@((string)context.Variables["contentType"])</value>
         </set-header>
         <choose>
+            <when condition="@((context.Request.Headers.GetValueOrDefault("auth-type", "").Equals("skyline", StringComparison.OrdinalIgnoreCase)) && (context.Request.Headers.GetValueOrDefault("idp-type", "").Equals("onboarding-unauthenticated", StringComparison.OrdinalIgnoreCase)))">
+                <!-- Set the new scope header for skyline token with idp-type equals to 'onboarding-unauthenticated' -->
+                <set-header name="scope" exists-action="override">
+                    <value>onboarding-unauthenticated</value>
+                </set-header>
+            </when>
             <when condition="@((context.Request.Url.Path.Contains("/cached-token-with-roles")) && (context.Request.Method == "GET" || context.Request.Method == "DELETE"))">
                 <choose>
                     <when condition="@(!context.Request.Headers.ContainsKey("msid") || !context.Request.Headers.ContainsKey("webapp-cache-id"))">
@@ -90,14 +96,6 @@
                     </otherwise>
                 </choose>
             </otherwise>
-        </choose>
-        <choose>
-            <when condition="@((context.Request.Headers.GetValueOrDefault("auth-type", "").Equals("skyline", StringComparison.OrdinalIgnoreCase)) && (context.Request.Headers.GetValueOrDefault("idp-type", "").Equals("onboarding-unauthenticated", StringComparison.OrdinalIgnoreCase))">
-                <!-- Set the new scope header with 'onboarding-unauthenticated' -->
-                <set-header name="scope" exists-action="override">
-                    <value>onboarding-unauthenticated</value>
-                </set-header>
-            </when>
         </choose>
         <cors>
             <allowed-origins>
