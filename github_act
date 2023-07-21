@@ -1,0 +1,87 @@
+name: Config_graph_Web_App
+on:
+  pull_request:
+  workflow_dispatch: 
+    inputs:
+     environment:
+       description: 'CWP Environment'
+       type: choice
+       options:
+          - dev
+          - stg
+          - prf
+          - tst
+     region:
+        description: CWP Region
+        type: choice
+        options:
+           - central
+           - east
+           - both
+jobs:
+  BuildandDeploy:
+     name: 'Build and Deployment' 
+     runs-on: [uhg-runner]
+     steps: 
+       - name: Checkout Repository
+         uses: actions/checkout@v3.5.3
+         with:
+           repository: ${{github.repository}}
+           
+       - name: Login to Azure
+         uses: azure/login@v1
+         continue-on-error: false
+         with:
+          creds: ${{ secrets.SERVICEPRINCIPAL }}
+          
+       - name: Setup Node.js environment
+         uses: actions/setup-node@v2.5.2
+         with:
+            always-auth: false
+            node-version: 16.19.1 
+       - name: Install Dependencies
+         run: yarn install
+
+       - name: Run quality checks for Pull Requests
+         run: |
+                yarn check-types
+                yarn format:check
+                echo "===== Running lint ====="
+                yarn lint
+       - name: Build WebApp
+         run: yarn build
+       - name: Install Prod Dependencies
+         run: yarn workspaces focus --production
+       - name: Copy Prod Files
+         uses: actions/upload-artifact@v2
+         with:
+            name: drop
+            path: |
+              .yarn/**
+              .next/**
+              .yarnrc.yml
+               yarn.lock
+               node_modules/**
+               public/**
+               package.json
+               ecosystem.config.js
+               next.config.js
+       - name: Archive Prod Files
+         run: |
+            cd ${{ github.workspace }}
+            zip -r $(Build.BuildId).zip .
+       - name: Publish Prod Files
+         uses: actions/upload-artifact@v2
+         with:
+            name: drop
+            path: ${{ github.workspace }}/*.zip      
+       - name: Azure WebApp
+         uses: Azure/webapps-deploy@v2.2.10
+         with:
+      # Name of the Azure Web App
+            app-name: 'mbr-portal-cfga-${{ ENV.environment }}-us-c-webapp'
+            publish-profile: ${{ secrets.AzureAppService_PublishProfile_a5651b38972e4899b92de9bf50e16862 }}
+            slot-name: 'production' 
+            package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+            startup-command: 'yarn start'
+            resource-group-name: 'mbr-portal-${{ ENV.environment }}-us-c-rg'

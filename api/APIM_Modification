@@ -1,0 +1,114 @@
+<policies>
+    <inbound>
+        <base />
+        <choose>
+            <when condition="@(context.Request.Headers.ContainsKey("Content-Type"))">
+                <!-- Extract the Content-Type value from the incoming request -->
+                <set-variable name="contentType" value="@{ return context.Request.Headers["Content-Type"].FirstOrDefault(); }" />
+            </when>
+            <otherwise>
+                <!-- Set the default Content-Type to application/json -->
+                <set-variable name="contentType" value="application/json" />
+            </otherwise>
+        </choose>
+        <!-- Set the Content-Type header -->
+        <set-header name="Content-Type" exists-action="override">
+            <value>@((string)context.Variables["contentType"])</value>
+        </set-header>
+        <choose>
+            <when condition="@((context.Request.Url.Path.Contains("/cached-token-with-roles")) && (context.Request.Method == "GET" || context.Request.Method == "DELETE"))">
+                <choose>
+                    <when condition="@(!context.Request.Headers.ContainsKey("msid") || !context.Request.Headers.ContainsKey("webapp-cache-id"))">
+                        <return-response>
+                            <set-status code="400" reason="Bad Request" />
+                            <set-header name="Content-Type" exists-action="override">
+                                <value>application/json</value>
+                            </set-header>
+                            <set-body>{"error": "Incorrect request headers"}</set-body>
+                        </return-response>
+                    </when>
+                    <otherwise></otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                <choose>
+                    <when condition="@(context.Request.Headers.GetValueOrDefault("auth-type", "").Equals("skyline", StringComparison.OrdinalIgnoreCase))">
+                        <!-- New condition added for skyline auth-type -->
+                        <choose>
+                            <when condition="@((context.Request.Headers.GetValueOrDefault("idp-type", "").Equals("onboarding-unauthenticated", StringComparison.OrdinalIgnoreCase)))">
+                                <set-header name="new-scope-header" exists-action="override">
+                                    <value>onboarding-unauthenticated</value>
+                                </set-header>
+                            </when>
+                        </choose>
+                        <!-- Continue with the existing Skyline token validation -->
+                        <send-request mode="new" response-variable-name="skyline-response" timeout="30" ignore-error="false">
+                            <!-- This policy is added manually, so the skyline token url will change based on each env! -->
+                            <set-url>@("https://mbr-portal-skyline-{{environment}}-us-c-fn.azurewebsites.net/api/token/validate")</set-url>
+                            <set-method>POST</set-method>
+                            <set-header name="Authorization" exists-action="override">
+                                <value>@(context.Request.Headers.GetValueOrDefault("Authorization"))</value>
+                            </set-header>
+                            <set-header name="idp-type" exists-action="override">
+                                <value>msid</value>
+                            </set-header>
+                            <set-header name="tenant-id" exists-action="override">
+                                <value>Optum</value>
+                            </set-header>
+                        </send-request>
+                        <choose>
+                            <when condition="@(((IResponse)context.Variables["skyline-response"]).StatusCode != 200)">
+                                <return-response>
+                                    <set-status code="401" reason="Bad Token" />
+                                    <set-body>@(((IResponse)context.Variables["skyline-response"]).Body.As<JObject>(preserveContent: true).ToString())</set-body>
+                                </return-response>
+                            </when>
+                        </choose>
+                    </when>
+                    <when condition="@(context.Request.Headers.GetValueOrDefault("auth-type", "").Equals("hemi", StringComparison.OrdinalIgnoreCase))">
+                        <validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid." require-expiration-time="true" output-token-variable-name="jwt">
+                            <openid-config url="https://login.microsoftonline.com/orxhemib2c.onmicrosoft.com/.well-known/openid-configuration" />
+                            <audiences>
+                                <audience>58e84439-7a65-437a-adca-e108d0b73d98</audience>
+                            </audiences>
+                            <required-claims>
+                                <claim name="roles" match="any">
+                                    <value>read-configuration-role</value>
+                                </claim>
+                            </required-claims>
+                        </validate-jwt>
+                    </when>
+                    <otherwise>
+                        <return-response>
+                            <set-status code="401" reason="Unauthorized" />
+                            <set-header name="Content-Type" exists-action="override">
+                                <value>application/json</value>
+                            </set-header>
+                            <set-body>{"error": "You must provide either a hemi or skyline auth-type Header"}</set-body>
+                        </return-response>
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+        <cors>
+            <allowed-origins>
+                <origin>*</origin>
+            </allowed-origins>
+            <allowed-methods preflight-result-max-age="300">
+                <method>*</method>
+            </allowed-methods>
+            <allowed-headers>
+                <header>*</header>
+            </allowed-headers>
+        </cors>
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>

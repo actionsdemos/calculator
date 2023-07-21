@@ -1,0 +1,47 @@
+
+
+You need to add condition inside skyline token
+
+
+<set-header name="new-scope-header" exists-action="override">
+
+                    <value>onboarding-unauthenticated</value>
+
+                </set-header>
+
+
+
+header name should be scope 
+
+
+
+not new-scope-header
+
+
+<send-request mode="new" response-variable-name="skyline-response" timeout="30" ignore-error="false">
+
+                            <!-- This policy is added manually, so the skyline token url will change based on each env! -->
+
+                            <set-url>@("https://mbr-portal-skyline-dev-us-c-fn.azurewebsites.net/api/token/validate")</set-url>
+
+                            <set-method>POST</set-method>
+
+                            <set-header name="Authorization" exists-action="override">
+
+                                <value>@(context.Request.Headers.GetValueOrDefault("Authorization"))</value>
+
+                            </set-header>
+
+                            <set-header name="idp-type" exists-action="override">
+
+                                <value>msid</value>
+
+                            </set-header>
+
+                            <set-header name="tenant-id" exists-action="override">
+
+                                <value>Optum</value>
+
+                            </set-header>
+
+                        </send-request>

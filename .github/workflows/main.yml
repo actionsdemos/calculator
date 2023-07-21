@@ -1,0 +1,66 @@
+name: orx-cwp-config-service-webapp
+on:
+ workflow_dispatch:
+   inputs:
+    environment:
+       description: 'CWP Environment'
+       type: choice
+       options:
+          - dev
+          - stg
+          - prf
+          - tst
+    region:
+       description: 'CWP Region'
+       type: choice
+       options:
+          - Central
+          - East     
+jobs:
+  BuildandDeploy:
+    name: 'Build and Deployment'
+    runs-on: [uhg-runner]
+    # needs: qualitychecks
+    steps:
+      - name: setup
+        uses: optum-rx-consumer-digital/orx-cwp-config-service-webapp/.github/actions/setup@webapp_action
+        with:
+          repository: ${{github.repository}}
+
+      - name: Production Build
+        run: yarn build
+
+      - name: Install Prod Dependencies
+        run: yarn workspaces focus --production
+
+      - name: Copy Prod Files
+        run: |
+          mkdir -p ${{ github.workspace }}/cfga_webapp
+          cp -rvf .yarn '${{ github.workspace }}/cfga_webapp'
+          cp -rvf .next '${{ github.workspace }}/cfga_webapp'
+          cp -rvf yarn.lock '${{ github.workspace }}/cfga_webapp'
+          cp -rvf node_modules '${{ github.workspace }}/cfga_webapp'
+          cp -rvf public '${{ github.workspace }}/cfga_webapp'
+          cp -rvf package.json '${{ github.workspace }}/cfga_webapp'
+          cp -rvf ecosystem.config.js '${{ github.workspace }}/cfga_webapp'
+          cp -rvf next.config.js '${{github.workspace }}/cfga_webapp'
+
+      #      - name: Archive Prod Files
+      #       run: |
+      #         cd ${{ github.workspace }}/cfga_webapp
+      #        zip -r ${{ github.run_id }}.zip .
+      #       ls -larth
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        continue-on-error: false
+        with:
+          creds: ${{ secrets.SERVICEPRINCIPAL }}
+
+      - name: Azure WebApp
+        uses: Azure/webapps-deploy@v2
+        with:
+          app-name: 'mbr-portal-cfga-{{ inputs.environment }}-us-c-webapp'
+          slot-name: 'production'
+          package: '${{ github.workspace }}/cfga_webapp/'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}

@@ -1,0 +1,57 @@
+name: $(Build.SourceBranchName)_$(Rev:r)
+
+pr:
+  branches:
+    include:
+      - 'master'
+
+pool:
+  name: Portal21
+#Your build pipeline references the ‘environment’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
+
+parameters:
+  - name: environment
+    displayName: CWP environment
+    type: string
+    default: dev
+    values:
+      - Please select environment
+      - dev
+      - ts1
+      - ts2
+      - ts3
+      - stg
+      - prf
+      - cte
+      - tst
+
+  - name: region
+    displayName: CWP Region
+    type: string
+    default: central
+    values:
+      - central
+      - east
+      - both
+
+stages:
+  - stage: Deployment
+    jobs:
+      - job: Build
+        steps:
+          - template: 'azure-default-steps.yaml'
+
+          - task: AzureRmWebAppDeployment@4
+            displayName: 'Azure web App Deployment: mbr-portal-cfga-${{ parameters.environment }}-us-c-wb'
+            inputs:
+              azureSubscription: MemberPortalNonProdServicePrincipalConnection
+              ResourceGroupName: 'mbr-portal-${{ parameters.environment }}-us-c-rg'
+              appType: 'webAppLinux'
+              WebAppName: 'mbr-portal-cfga-${{ parameters.environment }}-us-c-webapp'
+              deployToSlotOrASE: true
+              SlotName: 'production'
+              packageForLinux: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+              enableCustomDeployment: true
+              DeploymentType: 'zipDeploy'
+              StartupCommand: 'yarn start'
+            condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))

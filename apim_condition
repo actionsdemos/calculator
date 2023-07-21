@@ -1,0 +1,5 @@
+ <when condition="@(context.Request.Headers.GetValueOrDefault("idp-type", "").Equals("onboarding-unauthenticated", StringComparison.OrdinalIgnoreCase))">
+            <set-header name="scope" exists-action="override">
+                <value>onboarding-unauthenticated</value>
+            </set-header>
+        </when>

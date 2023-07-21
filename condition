@@ -1,0 +1,143 @@
+name: $(Build.BuildNumber).$(Version.Revision)$(Version.Suffix)
+trigger:
+  branches:
+    exclude:
+      - '*'
+  tags:
+    include:
+      - v2.*
+    exclude:
+      - v2.0*
+pr:
+  branches:
+    include:
+      - main
+pool:
+  name: Portal21
+
+parameters:
+  - name: environment
+    displayName: CWP environment
+    type: string
+    default: Please select environment
+    values:
+      - Please select environment
+      - dev
+      - ts1
+      - ts2
+      - ts3
+      - stg
+      - prf
+      - cte
+      - tst
+
+  - name: region
+    displayName: CWP Region
+    type: string
+    default: Please select environment Central or East
+    values:
+      - central
+      - east
+      - both
+
+variables:
+  Build.BuildNumber: rel23.1
+  Version.Revision: $[counter(variables['Build.BuildNumber'],0)]
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    Version.Suffix: '' # master
+  ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+    Version.Suffix: '-pr' # pull request
+  ${{ if and(ne(variables['Build.SourceBranch'], 'refs/heads/master'), ne(variables['Build.Reason'], 'PullRequest')) }}:
+    Version.Suffix: 'Branch'
+
+steps:
+  - script: echo "##vso[$(Build.BuildNumber).$(Version.Revision)]$(Version.Suffix)"
+
+  - task: UseNode@1
+    displayName: 'Use Node 16.19.1'
+    inputs:
+      version: '16.19.1'
+      checkLatest: true
+
+  - task: YarnInstaller@3
+    displayName: 'Use Yarn 1.x'
+    inputs:
+      versionSpec: '1.x'
+      checkLatest: true
+
+  - bash: |
+      yarn config set registry https://repo1.uhc.com/artifactory/api/npm/npm-virtual/
+      yarn install
+      yarn build:prod
+    displayName: 'Application build'
+  - bash: |
+      echo 'Assigning build variables'
+
+      if [[ $(Build.SourceBranchName) == "master" ]]
+      then
+      echo '##vso[task.setvariable variable=funapp_image_name]master-portal-config-graph-api'
+      echo '##vso[task.setvariable variable=image_tag1]$(Build.SourceBranchName)-latest'
+      echo '##vso[task.setvariable variable=image_tag2]$(Build.BuildNumber)'
+      else
+      echo '##vso[task.setvariable variable=funapp_image_name]release-portal-config-graph-api-fun'
+      echo '##vso[task.setvariable variable=image_tag1]$(Build.SourceBranchName)-latest'
+      echo '##vso[task.setvariable variable=image_tag2]$(Build.SourceBranchName).$(Build.BuildId)'
+      fi
+    displayName: 'Assigning build variables'
+
+  - bash: |
+      echo 'Showing variables'
+
+      echo 'Branch name : '$(Build.SourceBranchName)
+      echo 'fun app image name : '$(funapp_image_name)
+      echo 'image tag1 : '$(image_tag1)
+      echo 'image tag2 : '$(image_tag2)
+
+    displayName: 'Showing variables'
+
+  - bash: |
+      if [[ "${{ parameters.environment }}" == "dev" || "${{ parameters.environment }}" == "tst" && "${{ parameters.region }}" == "east" ]]; then
+        echo "Dev and tst are unavailable in the east region. Changing the region to central."
+        echo "##vso[task.setvariable variable=region]central"
+      fi
+    displayName: 'Check condition'
+
+  - task: AzureFunctionApp@1
+    condition: and(succeeded(), or(eq('${{ parameters.region }}', 'central'), eq('${{ parameters.region }}', 'both')))
+    displayName: 'Azure Function App Deployment: config-graph-${{ parameters.environment }}-us-c-fn'
+    inputs:
+      azureSubscription: MemberPortalNonProdServicePrincipalConnection
+      appType: functionAppLinux
+      appName: 'config-graph-${{ parameters.environment }}-us-c-fn'
+      package: ./
+      deployToSlotOrASE: true
+      slotName: staging
+
+  - task: AzureCLI@1
+    condition: and(succeeded(), or(eq('${{ parameters.region }}', 'central'), eq('${{ parameters.region }}', 'both')))
+    displayName: Azure CLI Slot Swap Command
+    inputs:
+      azureSubscription: MemberPortalNonProdServicePrincipalConnection
+      scriptLocation: inlineScript
+      inlineScript: |
+        az functionapp deployment slot swap -g mbr-portal-${{ parameters.environment }}-us-c-rg -n config-graph-${{ parameters.environment }}-us-c-fn --slot staging --target-slot production
+
+  - task: AzureFunctionApp@1
+    condition: and(succeeded(), or(eq('${{ parameters.region }}', 'east'), eq('${{ parameters.region }}', 'both')))
+    displayName: 'Azure Function App Deployment: config-graph-${{ parameters.environment }}-us-e-fn'
+    inputs:
+      azureSubscription: MemberPortalNonProdServicePrincipalConnection
+      appType: functionAppLinux
+      appName: 'config-graph-${{ parameters.environment }}-us-e-fn'
+      package: ./
+      deployToSlotOrASE: true
+      slotName: staging
+
+  - task: AzureCLI@1
+    condition: and(succeeded(), or(eq('${{ parameters.region }}', 'east'), eq('${{ parameters.region }}', 'both')))
+    displayName: Azure CLI Slot Swap Command
+    inputs:
+      azureSubscription: MemberPortalNonProdServicePrincipalConnection
+      scriptLocation: inlineScript
+      inlineScript: |
+        az functionapp deployment slot swap -g mbr-portal-${{ parameters.environment }}-us-e-rg -n config-graph-${{ parameters.environment }}-us-e-fn --slot staging --target-slot production

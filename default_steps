@@ -1,0 +1,79 @@
+name: Build and Publish
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Use Node 16.19.1
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.19.1'
+
+      - name: Use Yarn 1.x
+        run: yarn set version 1.x
+
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Run quality checks for Pull Requests
+        run: |
+          echo "===== Running type checks ====="
+          yarn check-types
+
+          echo "===== Running format checks ====="
+          yarn format:check
+
+          echo "===== Running lint ====="
+          yarn lint
+        if: ${{ success() && github.event_name == 'pull_request' }}
+
+      - name: Build WebApp
+        run: yarn build
+        if: ${{ success() && github.event_name != 'pull_request' }}
+
+      - name: Install Prod Dependencies
+        run: yarn workspaces focus --production
+        if: ${{ success() && github.event_name != 'pull_request' }}
+
+      - name: Copy Prod Files
+        uses: actions/upload-artifact@v2
+        with:
+          name: prod-files
+          path: |
+            .yarn/**
+            .next/**
+            .yarnrc.yml
+            yarn.lock
+            node_modules/**
+            public/**
+            package.json
+            ecosystem.config.js
+            next.config.js
+        if: ${{ success() && github.event_name != 'pull_request' }}
+
+      - name: Archive Prod Files
+        uses: actions/upload-artifact@v2
+        with:
+          name: prod-archive
+          path: ${{ github.workspace }}/${{ github.run_id }}.zip
+          overwrite: true
+        if: ${{ success() && github.event_name != 'pull_request' }}
+
+      - name: Publish Prod Files
+        uses: actions/upload-artifact@v2
+        with:
+          name: prod-artifact
+          path: ${{ github.workspace }}/${{ github.run_id }}.zip
+        if: ${{ success() && github.event_name != 'pull_request' }}

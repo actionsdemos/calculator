@@ -1,0 +1,20 @@
+runs:
+  using: "composite"  
+  steps:
+     - name: Checkout
+       uses: actions/checkout@v3.5.3
+     - name: Setup node
+       uses: actions/setup-node@v3
+       with:
+        node-version: 16.13.x
+     - name: Upload a Build Artifact
+       uses: actions/upload-artifact@v3.1.2
+       with:
+        name: 
+        path:   
+        Available Options:
+        warn: Output a warning but do not fail the action
+        error: Fail the action with an error message
+        ignore: Do not output any warnings or errors, the action does not fail
+        if-no-files-found: 
+         retention-days: # optional

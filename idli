@@ -1,0 +1,217 @@
+
+      - name: Deploy to Central region
+        if: ${{ contains(parameters.region, 'central') || contains(parameters.region, 'both') }}
+        env:
+          AZURE_SUBSCRIPTION: 'Member Portal Production Service Principle' # Change this to your Azure subscription name
+        run: |
+          az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+          az account set --subscription "$AZURE_SUBSCRIPTION"
+          az webapp deployment source config-zip -g $AZURE_RG -n $AZURE_APP_NAME --src $AZURE_PACKAGE_PATH
+
+      - name: Deploy to East region
+        if: ${{ contains(parameters.region, 'east') || contains(parameters.region, 'both') }}
+        env:
+          AZURE_SUBSCRIPTION: 'Member Portal Production Service Principle' # Change this to your Azure subscription name
+          AZURE_RG: 'mbr-portal-us-e-rg' # Change this to your Azure Resource Group name for 'east' region
+          AZURE_APP_NAME: 'mbr-portal-cfga-us-e-webapp' # Change this to your Azure Web App name for 'east' region
+        run: |
+          az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+          az account set --subscription "$AZURE_SUBSCRIPTION"
+          az webapp deployment source config-zip -g $AZURE_RG -n $AZURE_APP_NAME --src $AZURE_PACKAGE_PATH
+Notes:
+
+Replace path/to/your/project with the actual path to your project directory.
+Update the values of AZURE_SUBSCRIPTION, AZURE_RG, and AZURE_APP_NAME environment variables with the appropriate values for your Azure environment.
+The provided GitHub Action workflow is triggered on every push to any branch, and it supports building and deploying to either the 'central', 'east', or 'both' regions based on the selected value for the region parameter.
+Ensure you have the necessary credentials and access set up for your Azure service principal in your GitHub repository secrets to authenticate with Azure during deployment.
+
+
+
+
+
+User
+make above git hub action similar to this provided apporch name: non-prod-cfga-webapp-deployment
+
+on:
+  #push:
+  #branches:
+  #- 'master'
+  workflow_run:
+    workflows: [CodeQL]
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select Environment'
+        required: true
+        type: choice
+        # default: 'dev'
+        options:
+          - dev
+          - tst
+          - prf
+          - stg
+
+jobs:
+  BuildandDeploy:
+    name: 'Build and Deployment'
+    runs-on: [uhg-runner]
+
+    steps:
+      - name: Set Publish Profile Secret
+        id: set_publish_profile_secret
+        run: |
+          if [[ "${{ inputs.environment }}" == dev ]]; then
+            echo "publish_profile_secret::${{ secrets.DEV_AZURE_WEBAPP_PUBLISH_PROFILE }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ inputs.environment }}" == tst ]]; then
+            echo "publish_profile_secret::${{ secrets.TST_AZURE_WEBAPP_PUBLISH_PROFILE }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ inputs.environment }}" == prf ]]; then
+            echo "publish_profile_secret::${{ secrets.PRF_AZURE_WEBAPP_PUBLISH_PROFILE }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ inputs.environment }}" == stg ]]; then
+            echo "publish_profile_secret::${{ secrets.STG_AZURE_WEBAPP_PUBLISH_PROFILE }}" >> $GITHUB_OUTPUT
+          else
+            echo "Invalid environment selected"
+            exit 1
+          fi
+
+      - name: setup
+        uses: optum-rx-consumer-digital/orx-cwp-config-service-webapp/.github/actions/setup@master
+        with:
+          repository: ${{ github.repository }}
+
+      - name: Production Build
+        run: yarn build
+
+      - name: Install Prod Dependencies
+        run: yarn workspaces focus --production
+
+      - name: Copy Prod Files
+        run: |
+          mkdir -p ${{ github.workspace }}/cfga_webapp
+          cp -rvf .yarn '${{ github.workspace }}/cfga_webapp'
+          cp -rvf .next '${{ github.workspace }}/cfga_webapp'
+          cp -rvf yarn.lock '${{ github.workspace }}/cfga_webapp'
+          cp -rvf node_modules '${{ github.workspace }}/cfga_webapp'
+          cp -rvf public '${{ github.workspace }}/cfga_webapp'
+          cp -rvf package.json '${{ github.workspace }}/cfga_webapp'
+          cp -rvf ecosystem.config.js '${{ github.workspace }}/cfga_webapp'
+          cp -rvf next.config.js '${{ github.workspace }}/cfga_webapp'
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        continue-on-error: false
+        with:
+          creds: ${{ secrets.SERVICEPRINCIPAL }}
+
+      - name: Azure WebApp Deploy
+        uses: Azure/webapps-deploy@v2
+        with:
+          app-name: mbr-portal-cfga-${{ inputs.environment }}-us-c-webapp
+          slot-name: 'production'
+          package: '${{ github.workspace }}/cfga_webapp/'
+          publish-profile: ${{ steps.set_publish_profile_secret.outputs.publish_profile_secret }}
+
+      - name: Cleanup cfga_webapp directory
+        run: rm -rf '${{ github.workspace }}/cfga_webapp'
+ChatGPT
+To make the provided GitHub Action similar to the approach you shared, you can create a new file in your repository under the path .github/workflows/non-prod-cfga-webapp-deployment.yml and paste the following content:
+
+yaml
+Copy code
+name: non-prod-cfga-webapp-deployment
+
+on:
+  #push:
+  #branches:
+  #- 'master'
+  workflow_run:
+    workflows: [CodeQL]
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select Environment'
+        required: true
+        type: choice
+        # default: 'dev'
+        options:
+          - dev
+          - tst
+          - prf
+          - stg
+
+jobs:
+  BuildandDeploy:
+    name: 'Build and Deployment'
+    runs-on: 'uhg-runner'
+
+    steps:
+      - name: Set Publish Profile Secret
+        id: set_publish_profile_secret
+        run: |
+          if [[ "${{ inputs.environment }}" == dev ]]; then
+            echo "publish_profile_secret::${{ secrets.DEV_AZURE_WEBAPP_PUBLISH_PROFILE }}" >> $GITHUB_ENV
+          elif [[ "${{ inputs.environment }}" == tst ]]; then
+            echo "publish_profile_secret::${{ secrets.TST_AZURE_WEBAPP_PUBLISH_PROFILE }}" >> $GITHUB_ENV
+          elif [[ "${{ inputs.environment }}" == prf ]]; then
+            echo "publish_profile_secret::${{ secrets.PRF_AZURE_WEBAPP_PUBLISH_PROFILE }}" >> $GITHUB_ENV
+          elif [[ "${{ inputs.environment }}" == stg ]]; then
+            echo "publish_profile_secret::${{ secrets.STG_AZURE_WEBAPP_PUBLISH_PROFILE }}" >> $GITHUB_ENV
+          else
+            echo "Invalid environment selected"
+            exit 1
+          fi
+
+      - name: setup
+        uses: optum-rx-consumer-digital/orx-cwp-config-service-webapp/.github/actions/setup@master
+        with:
+          repository: ${{ github.repository }}
+
+      - name: Production Build
+        run: yarn build
+
+      - name: Install Prod Dependencies
+        run: yarn workspaces focus --production
+
+      - name: Copy Prod Files
+        run: |
+          mkdir -p ${{ github.workspace }}/cfga_webapp
+          cp -rvf .yarn '${{ github.workspace }}/cfga_webapp'
+          cp -rvf .next '${{ github.workspace }}/cfga_webapp'
+          cp -rvf yarn.lock '${{ github.workspace }}/cfga_webapp'
+          cp -rvf node_modules '${{ github.workspace }}/cfga_webapp'
+          cp -rvf public '${{ github.workspace }}/cfga_webapp'
+          cp -rvf package.json '${{ github.workspace }}/cfga_webapp'
+          cp -rvf ecosystem.config.js '${{ github.workspace }}/cfga_webapp'
+          cp -rvf next.config.js '${{ github.workspace }}/cfga_webapp'
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        continue-on-error: false
+        with:
+          creds: ${{ secrets.SERVICEPRINCIPAL }}
+
+      - name: Azure WebApp Deploy
+        uses: Azure/webapps-deploy@v2
+        with:
+          app-name: mbr-portal-cfga-${{ inputs.environment }}-us-c-webapp
+          slot-name: 'production'
+          package: '${{ github.workspace }}/cfga_webapp/'
+          publish-profile: ${{ steps.set_publish_profile_secret.outputs.publish_profile_secret }}
+
+      - name: Cleanup cfga_webapp directory
+        run: rm -rf '${{ github.workspace }}/cfga_webapp'
+Notes:
+
+The provided GitHub Action workflow is triggered either when the CodeQL workflow is completed or manually through the workflow_dispatch event, which allows you to select the environment.
+The script sets the publish_profile_secret in the environment so that it can be used by the Azure WebApp Deploy step.
+Make sure to update the secrets with appropriate values for your Azure Web App's publish profiles, and ensure you have the necessary credentials set up in your GitHub repository secrets for authenticating with Azure during deployment.
+The workflow performs similar steps as in the original approach, including setting up dependencies, building the project, copying necessary files, logging into Azure, and deploying the web app.
+
+
+
+
+
+Regenerate response

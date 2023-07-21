@@ -1,0 +1,144 @@
+name: $(Build.SourceBranchName)_$(Rev:r)
+trigger: none
+
+pool:
+  name: Portal21
+
+parameters:
+  - name: environment
+    displayName: CWP environment
+    type: string
+    default: Please select environment
+    values:
+      - Please select environment
+      - dev
+      - ts1
+      - ts2
+      - ts3
+      - stg
+      - prf
+      - cte
+      - tst
+
+  - name: region
+    displayName: CWP Region
+    type: string
+    default: Please select environment Central, East, or STG
+    values:
+      - central
+      - east
+      - both
+      - stg
+
+steps:
+  - task: UseNode@1
+    displayName: 'Use Node 16.19.1'
+    inputs:
+      version: '16.19.1'
+      checkLatest: true
+
+  - task: YarnInstaller@3
+    displayName: 'Use Yarn 1.x'
+    inputs:
+      versionSpec: '1.x'
+      checkLatest: true
+
+  - bash: |
+      echo "$PWD"
+      pwd
+      ls -ltr
+      cd $PWD
+      rm -rf package-lock.json
+      rm -rf cag_ingestion_service_*
+      rm -rf infrastructure*
+      echo "$PWD"
+      pwd
+      ls -ltr
+      pwd
+    #  cd $PWD/non-prod/
+    #  pwd
+    displayName: 'Remove old functions in stage for multi cags'
+
+  - bash: |
+      yarn config set registry https://repo1.uhc.com/artifactory/api/npm/npm-virtual/
+      yarn install
+      yarn build:prod
+    displayName: 'Application build'
+
+  - bash: |
+      echo "$PWD"
+      cd non-prod
+      ls -ltr
+      pwd
+      if [ "${{ parameters.region }}" = "prf" ] || [ "${{ parameters.region }}" = "stg" ]; then
+        cp -R cag_ingestion_service_* $(Pipeline.Workspace)/prod
+      else
+        cp -R cag_ingestion_service_* $(Pipeline.Workspace)/non-prod
+      fi
+      pwd
+      cd ../
+      pwd
+      ls -ltr
+      pwd
+    displayName: 'Check Current Directory'
+
+  #- bash: |
+  #  pwd
+  #  cd /home/tfsbuild/azdosagents/agent1/_work/344/s/src/
+  #  rm -rf cag_ingestion_service*
+  #  pwd
+  #  cd /home/tfsbuild/azdosagents/agent1/_work/344/s/src/
+  #  pwd
+  #  cp -R cag_ingestion_service* /home/tfsbuild/azdosagents/agent1/_work/344/s/src/
+  #  cd /home/tfsbuild/azdosagents/agent1/_work/344/s/src/
+  #  pwd
+  #  ls -ltr
+  #displayName: "Removing old deployment function files "
+
+  #- task: AzureCLI@1
+  #  displayName: Azure CLI Copy fucntions from Non prod to fucntions folder
+  #    inputs:
+  #      azureSubscription: MemberPortalNonProdServicePrincipalConnection
+  #      scriptLocation: inlineScript
+  #      inlineScript: |
+  #        pwd && cd infrastructure/functions/non-prod/ && pwd && cp -R cag_ingestion_service*  /home/tfsbuild/azdosagents/agent1/_work/344/s/src/ && cd /home/tfsbuild/azdosagents/agent1/_work/344/s/src/ && pwd
+
+  - task: AzureFunctionApp@1
+    condition: and(succeeded(), or(eq('${{ parameters.region }}', 'central'), eq('${{ parameters.region }}', 'both')))
+    displayName: 'Azure Function App Deployment: cfg-cag-ingestion-${{ parameters.environment }}-us-c-fn'
+    inputs:
+      azureSubscription: MemberPortalNonProdServicePrincipalConnection
+      appType: functionAppLinux
+      appName: 'cfg-cag-ingestion-${{ parameters.environment }}-us-c-fn'
+      package: ./
+      deployToSlotOrASE: true
+      slotName: staging
+
+  - task: AzureCLI@1
+    condition: and(succeeded(), or(eq('${{ parameters.region }}', 'central'), eq('${{ parameters.region }}', 'both')))
+    displayName: Azure CLI Slot Swap Command
+    inputs:
+      azureSubscription: MemberPortalNonProdServicePrincipalConnection
+      scriptLocation: inlineScript
+      inlineScript: |
+        az functionapp deployment slot swap -g mbr-portal-${{ parameters.environment }}-us-c-rg -n cfg-cag-ingestion-${{ parameters.environment }}-us-c-fn --slot staging --target-slot production
+
+  - task: AzureFunctionApp@1
+    condition: and(succeeded(), or(eq('${{ parameters.region }}', 'east'), eq('${{ parameters.region }}', 'both')))
+    displayName: 'Azure Function App Deployment: cfg-cag-ingestion-${{ parameters.environment }}-us-e-fn'
+    inputs:
+      azureSubscription: MemberPortalNonProdServicePrincipalConnection
+      appType: functionAppLinux
+      appName: 'cfg-cag-ingestion-${{ parameters.environment }}-us-e-fn'
+      package: ./
+      deployToSlotOrASE: true
+      slotName: staging
+
+  - task: AzureCLI@1
+    condition: and(succeeded(), or(eq('${{ parameters.region }}', 'east'), eq('${{ parameters.region }}', 'both')))
+    displayName: Azure CLI Slot Swap Command
+    inputs:
+      azureSubscription: MemberPortalNonProdServicePrincipalConnection
+      scriptLocation: inlineScript
+      inlineScript: |
+        az functionapp deployment slot swap -g mbr-portal-${{ parameters.environment }}-us-e-rg -n cfg-cag-ingestion-${{ parameters.environment }}-us-e-fn --slot staging --target-slot production

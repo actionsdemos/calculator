@@ -1,0 +1,25 @@
+curl --location --request POST 'https://prf-new.optumrx.com/skyline/token' \
+--header 'idp-type: onboarding-unauthenticated' \
+--header 'tenant-id: POR5' \
+--header 'Cookie: ASLBSA=000310e6a38cabf15bd8c701b45fb879045ba63ee0d9e3534221c793998daf1c9a77; ASLBSACORS=000310e6a38cabf15bd8c701b45fb879045ba63ee0d9e3534221c793998daf1c9a77' \
+--data ''
+
+
+
+curl --location --request POST 'https://prf-new.optumrx.com/skyline/token/validate' \
+--header 'access-token: <skyline-token>' \
+--header 'scope: onboarding-unauthenticated' \
+--header 'Cookie: ASLBSA=000310e6a38cabf15bd8c701b45fb879045ba63ee0d9e3534221c793998daf1c9a77; ASLBSACORS=000310e6a38cabf15bd8c701b45fb879045ba63ee0d9e3534221c793998daf1c9a77' \
+--data ''
+
+
+
+
+
+
+
+
+
+
+
+if auth-type is  skyline token and  idp-type equels to  onboarding-unauthenticated' , set new scope header with   onboarding-unauthenticated'   from the APIM.
