@@ -1,4 +1,3 @@
-<!-- THIS POLICY IS SPECIFIC FOR CONFIG_GRAPH and CONFIG_GRAPH_REST APIs -->
 <policies>
     <inbound>
         <base />
@@ -34,7 +33,14 @@
             <otherwise>
                 <choose>
                     <when condition="@(context.Request.Headers.GetValueOrDefault("auth-type", "").Equals("skyline", StringComparison.OrdinalIgnoreCase))">
-                        <!-- Send Authorization Header and Idp-type to Skyline Token -->
+                        <!-- New condition added for skyline auth-type -->
+                        <set-variable name="scopeHeader" value="default-scope-value" />
+                        <choose>
+                            <when condition="@((context.Request.Headers.GetValueOrDefault("idp-type", "").Equals("onboarding-unauthenticated", StringComparison.OrdinalIgnoreCase)))">
+                                <set-variable name="scopeHeader" value="onboarding-unauthenticated" />
+                            </when>
+                        </choose>
+                        <!-- Continue with the existing Skyline token validation -->
                         <send-request mode="new" response-variable-name="skyline-response" timeout="30" ignore-error="false">
                             <!-- This policy is added manually, so the skyline token url will change based on each env! -->
                             <set-url>@("https://mbr-portal-skyline-{{environment}}-us-c-fn.azurewebsites.net/api/token/validate")</set-url>
@@ -47,6 +53,10 @@
                             </set-header>
                             <set-header name="tenant-id" exists-action="override">
                                 <value>Optum</value>
+                            </set-header>
+                            <!-- Set the new-scope-header using the value of the scopeHeader variable (explicitly cast to string) -->
+                            <set-header name="new-scope-header" exists-action="override">
+                                <value>@((string)context.Variables["scopeHeader"])</value>
                             </set-header>
                         </send-request>
                         <choose>
