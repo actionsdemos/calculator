@@ -18,3 +18,6 @@ To build, simply:
 
 test-owedilh
 
+
+test-squash
+
