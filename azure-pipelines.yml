@@ -6,8 +6,9 @@
 trigger:
 - master
 
-pool:
-  vmImage: ubuntu-latest
+pool: Integrating External Source Control with Azure Pipelines Pool
+  # vmImage: ubuntu-latest
+
 
 steps:
 - task: NodeTool@0
