@@ -6,7 +6,8 @@
 trigger:
 - master
 
-pool: Integrating External Source Control with Azure Pipelines Pool
+pool: 
+name: local
   # vmImage: ubuntu-latest
 
 
