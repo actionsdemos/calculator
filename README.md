@@ -1,4 +1,4 @@
-![image](https://github.com/YHZ-EPIC/calculator_fork/assets/59396511/32d773b1-5d6d-4edf-a26e-42e4ceffc4c9)Calculator.js: a node.js Demonstration Project
+Calculator.js: a node.js Demonstration Project
 ==============================================
 An example node.js project, including tests with mocha, that behaves like
 a pocket calculator.
