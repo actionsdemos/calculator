@@ -2,6 +2,7 @@ Calculator.js: a node.js Demonstration Project
 ==============================================
 An example node.js project, including tests with mocha, that behaves like
 a pocket calculator.
+![image](https://github.com/ayeshazia99/calculator/assets/139223147/ae8f76d5-79f8-44c4-ab51-ef6ab9db8b0c)
 
 The project contains a simple node.js application that exposes REST APIs
 to perform arithmetic on integers, and provides a test suite with mocha
