@@ -1,0 +1,11 @@
+name: hello world
+on:
+  push:
+    branches: [master]
+jobs:
+  say-hello:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "TODAY=$(date +%y-%m-%d)" >> $GITHUB_ENV 
+      - run: echo Hello world, today is $TODAY
+      - run: echo Here is a repository serect, secrets.REPOSITORY_CACULATOR_SERECT_A ${{ secrets.REPOSITORY_CACULATOR_SERECT_A }}
