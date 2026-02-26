@@ -12,13 +12,14 @@ exports.calculate = function(req, res) {
 
   var operations = {
     'add':      function(a,b) { return +a + +b },
+    // Using + operator to type cast variables as integers in order to prevent string concatenation
     'subtract': function(a,b) { return a - b },
     'multiply': function(a,b) { return a * b },
     'divide':   function(a,b) { return a / b },
   };
 
   // Determine the operation
-
+ // test
   if (! req.query.operation) {
     throw new Error("Unspecified operation");
   }
