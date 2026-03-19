@@ -1,8 +1,10 @@
 <html>
   <head>
-    <title>Pocket Calculator</title>
+    <title>Calculator.js</title>
     <link rel="stylesheet" href="default.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script>
       'use strict';
 
@@ -25,243 +27,200 @@
       var operand2 = 0;
       var operation = null;
 
-      function getValue()
-      {
-        return value;
-      }
+      function getValue() { return value; }
 
-      function setValue(n)
-      {
+      function setValue(n) {
         value = n;
         var displayValue = value;
 
-        if (displayValue > 99999999) {
-          displayValue = displayValue.toExponential(4);
-        } else if (displayValue < -99999999) {
-          displayValue = displayValue.toExponential(4);
-        } else if (displayValue > 0 && displayValue < 0.0000001) {
-          displayValue = displayValue.toExponential(4);
-        } else if (displayValue < 0 && displayValue > -0.0000001) {
-          displayValue = displayValue.toExponential(3);
+        if (displayValue > 99999999)              displayValue = displayValue.toExponential(4);
+        else if (displayValue < -99999999)         displayValue = displayValue.toExponential(4);
+        else if (displayValue > 0 && displayValue < 0.0000001)  displayValue = displayValue.toExponential(4);
+        else if (displayValue < 0 && displayValue > -0.0000001) displayValue = displayValue.toExponential(3);
+
+        var display = document.getElementById("result");
+        if (display) {
+          display.textContent = displayValue.toString();
+          var len = displayValue.toString().length;
+          display.style.fontSize = len > 10 ? '18px' : len > 7 ? '24px' : '36px';
         }
-
-        var chars = displayValue.toString().split("");
-        var html = "";
-
-        for (var c of chars) {
-          if (c == '-') {
-            html += "<span class=\"resultchar negative\">" + c + "</span>";
-          } else if (c == '.') {
-            html += "<span class=\"resultchar decimal\">" + c + "</span>";
-          } else if (c == 'e') {
-            html += "<span class=\"resultchar exponent\">e</span>";
-          } else if (c != '+') {
-            html += "<span class=\"resultchar digit" + c + "\">" + c + "</span>";
-          }
-        }
-
-        document.getElementById("result").innerHTML = html;
       }
 
-      function setError(n)
-      {
-        document.getElementById("result").innerHTML = "ERROR";
+      function setError() {
+        var display = document.getElementById("result");
+        if (display) { display.textContent = "ERR:DIV0"; display.style.fontSize = '20px'; }
       }
 
-      function setLoading(loading)
-      {
-        if (loading) {
-          document.getElementById("loading").style.visibility = "visible";
-        } else {
-          document.getElementById("loading").style.visibility = "hidden";
-        }
-
+      function setLoading(loading) {
+        var indicator = document.getElementById("loading");
+        if (indicator) indicator.style.display = loading ? 'flex' : 'none';
         var buttons = document.querySelectorAll("BUTTON");
-
-        for (var i = 0; i < buttons.length; i++) {
-          buttons[i].disabled = loading;
-        }
+        for (var i = 0; i < buttons.length; i++) buttons[i].disabled = loading;
       }
 
-      function calculate(operand1, operand2, operation)
-      {
+      function updateHistoryDisplay(op) {
+        var histEl = document.getElementById("display-history");
+        var opEl   = document.getElementById("display-op");
+        if (histEl) histEl.textContent = op ? operand1 + ' ' + op : '';
+        if (opEl)   opEl.textContent   = op ? operand1 + ' ' + op : '';
+      }
+
+      function calculate(op1, op2, op) {
         var uri = location.origin + "/arithmetic";
-
-        switch(operation) {
-          case '+':
-            uri += "?operation=add";
-            break;
-          case '-':
-            uri += "?operation=subtract";
-            break;
-          case '*':
-            uri += "?operation=multiply";
-            break;
-          case '/':
-            uri += "?operation=divide";
-            break;
-          default:
-            setError();
-            return;
+        switch(op) {
+          case '+': uri += "?operation=add";      break;
+          case '-': uri += "?operation=subtract"; break;
+          case '*': uri += "?operation=multiply"; break;
+          case '/': uri += "?operation=divide";   break;
+          default: setError(); return;
         }
-
-        uri += "&operand1=" + encodeURIComponent(operand1);
-        uri += "&operand2=" + encodeURIComponent(operand2);
-
+        uri += "&operand1=" + encodeURIComponent(op1);
+        uri += "&operand2=" + encodeURIComponent(op2);
         setLoading(true);
-
         var http = new XMLHttpRequest();
         http.open("GET", uri, true);
         http.onload = function() {
           setLoading(false);
-
           if (http.status == 200) {
             var response = JSON.parse(http.responseText);
             setValue(response.result);
-          } else {
-            setError();
-          }
+            var histEl = document.getElementById("display-history");
+            if (histEl) histEl.textContent = op1 + ' ' + op + ' ' + op2 + ' =';
+          } else { setError(); }
         };
         http.send(null);
       }
 
-      function clearPressed()
-      {
+      function clearPressed() {
         setValue(0);
-
-        previousOperand1 = 0;
-        previousOperand2 = 0;
-        previousOperation = null;
-        operand1 = 0;
-        operand2 = 0;
-        operation = null;
+        previousOperand1 = 0; previousOperand2 = 0; previousOperation = null;
+        operand1 = 0; operand2 = 0; operation = null;
         state = states.start;
+        updateHistoryDisplay(null);
       }
 
-      function clearEntryPressed()
-      {
+      function clearEntryPressed() {
         setValue(0);
         state = (state == states.operand2) ? states.operator : states.start;
       }
 
-      function numberPressed(n)
-      {
+      function numberPressed(n) {
         var value = getValue();
-
         if (state == states.start || state == states.complete) {
-          value = n;
-          state = (n == '0' ? states.start : states.operand1);
+          value = n; state = (n == '0' ? states.start : states.operand1);
         } else if (state == states.operator) {
-          value = n;
-          state = (n == '0' ? states.operator : states.operand2);
-        } else if (value.replace(/[-\.]/g, '').length < 8) {
+          value = n; state = (n == '0' ? states.operator : states.operand2);
+        } else if (value.toString().replace(/[-\.]/g, '').length < 8) {
           value += n;
         }
-
         value += "";
-
         setValue(value);
       }
 
-      function decimalPressed()
-      {
+      function decimalPressed() {
         if (state == states.start || state == states.complete) {
-          setValue('0.');
-          state = states.operand1;
+          setValue('0.'); state = states.operand1;
         } else if (state == states.operator) {
-          setValue('0.');
-          state = states.operand2;
+          setValue('0.'); state = states.operand2;
         } else if (!getValue().toString().includes('.')) {
           setValue(getValue() + '.');
         }
       }
 
-      function signPressed()
-      {
+      function signPressed() {
         var value = getValue();
-
-        if (value != 0) {
-          setValue(-1 * value);
-        }
+        if (value != 0) setValue(-1 * value);
       }
 
-      function operationPressed(op)
-      {
-        operand1 = getValue();
-        operation = op;
-        state = states.operator;
+      function operationPressed(op) {
+        operand1 = getValue(); operation = op; state = states.operator;
+        updateHistoryDisplay(op);
       }
 
-      function equalPressed()
-      {
-        if (state < states.operand2) {
-          state = states.complete;
-          return;
-        }
-
-        if (state == states.operand2) {
-          operand2 = getValue();
-          state = states.complete;
-        } else if (state == states.complete) {
-          operand1 = getValue();
-        }
-
+      function equalPressed() {
+        if (state < states.operand2) { state = states.complete; return; }
+        if (state == states.operand2) { operand2 = getValue(); state = states.complete; }
+        else if (state == states.complete) { operand1 = getValue(); }
         calculate(operand1, operand2, operation);
       }
 
       document.addEventListener('keypress', (event) => {
-        if (event.key.match(/^\d+$/)) {
-          numberPressed(event.key);
-        } else if (event.key == '.') {
-          decimalPressed();
-        } else if (event.key.match(/^[-*+/]$/)) {
-          operationPressed(event.key);
-        } else if (event.key == '=') {
-          equalPressed();
-        }
+        if (event.key.match(/^\d+$/))       numberPressed(event.key);
+        else if (event.key == '.')          decimalPressed();
+        else if (event.key.match(/^[-*+/]$/)) operationPressed(event.key);
+        else if (event.key == '=')          equalPressed();
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key == 'Enter')          equalPressed();
+        else if (event.key == 'Backspace') clearEntryPressed();
+        else if (event.key == 'Escape')    clearPressed();
       });
     </script>
   </head>
   <body onLoad="setValue(0)">
-    <div class="container">
-      <div id="results">
-        <div id="result"><span class="digit0">0</span></div>
-        <button id="sign" onClick="signPressed()">+/-</button>
+
+    <div class="page-wrapper">
+
+      <div class="calc-header">
+        <svg class="node-logo" viewBox="0 0 256 292" xmlns="http://www.w3.org/2000/svg">
+          <path d="M128 0 L256 73v146l-128 73L0 219V73z" fill="rgba(46,160,67,0.15)"/>
+          <path d="M128 20 L240 83v146l-112 63L16 229V83z" fill="none" stroke="#68d391" stroke-width="8" opacity="0.6"/>
+          <text x="128" y="175" text-anchor="middle" font-family="monospace" font-size="80" font-weight="700" fill="#68d391">N</text>
+        </svg>
+        <span class="calc-title">Calculator.js <span class="calc-version">v1.0</span></span>
       </div>
 
-      <div id="loading" style="visibility:hidden"></div>
-
-      <div id="buttons">
-        <div>
-          <button id="clear" onClick="clearPressed()">C</button>
-          <button id="clearEntry" onClick="clearEntryPressed()">CE</button>
+      <div class="calculator">
+        <div class="display-section">
+          <div class="display-meta">
+            <span class="display-label">node:calc</span>
+            <span class="display-op" id="display-op"></span>
+          </div>
+          <div class="display-history" id="display-history"></div>
+          <div class="display-main">
+            <span id="result">0</span><span class="display-cursor"></span>
+          </div>
+          <div id="loading" style="display:none;">
+            <span class="loading-dot"></span>
+            <span class="loading-dot"></span>
+            <span class="loading-dot"></span>
+          </div>
         </div>
 
-        <div>
-          <button id="seven" onClick="numberPressed(7)">7</button>
-          <button id="eight" onClick="numberPressed(8)">8</button>
-          <button id="nine" onClick="numberPressed(9)">9</button>
-          <button id="divide" onClick="operationPressed('/')">&#247;</button>
-        </div>
-        <div>
-          <button id="four" onClick="numberPressed(4)">4</button>
-          <button id="five" onClick="numberPressed(5)">5</button>
-          <button id="six" onClick="numberPressed(6)">6</button>
-          <button id="multiply" onClick="operationPressed('*')">&#215;</button>
-        </div>
-        <div>
-          <button id="one" onClick="numberPressed(1)">1</button>
-          <button id="two" onClick="numberPressed(2)">2</button>
-          <button id="three" onClick="numberPressed(3)">3</button>
-          <button id="subtract" onClick="operationPressed('-')">-</button>
-        </div>
-        <div>
-          <button id="zero" onClick="numberPressed(0)">0</button>
-          <button id="decimal" onClick="decimalPressed()">.</button>
-          <button id="equal" onClick="equalPressed()">=</button>
-          <button id="add" onClick="operationPressed('+')">+</button>
+        <div class="keypad">
+          <button class="btn btn-special" id="sign"       onclick="signPressed()">+/&#8722;</button>
+          <button class="btn btn-clear"   id="clear"      onclick="clearPressed()">C</button>
+          <button class="btn btn-clear"   id="clearEntry" onclick="clearEntryPressed()">CE</button>
+          <button class="btn btn-op"      id="divide"     onclick="operationPressed('/')">&#247;</button>
+
+          <button class="btn btn-num" id="seven"    onclick="numberPressed(7)">7</button>
+          <button class="btn btn-num" id="eight"    onclick="numberPressed(8)">8</button>
+          <button class="btn btn-num" id="nine"     onclick="numberPressed(9)">9</button>
+          <button class="btn btn-op"  id="multiply" onclick="operationPressed('*')">&#215;</button>
+
+          <button class="btn btn-num" id="four"     onclick="numberPressed(4)">4</button>
+          <button class="btn btn-num" id="five"     onclick="numberPressed(5)">5</button>
+          <button class="btn btn-num" id="six"      onclick="numberPressed(6)">6</button>
+          <button class="btn btn-op"  id="subtract" onclick="operationPressed('-')">&#8722;</button>
+
+          <button class="btn btn-num" id="one"      onclick="numberPressed(1)">1</button>
+          <button class="btn btn-num" id="two"      onclick="numberPressed(2)">2</button>
+          <button class="btn btn-num" id="three"    onclick="numberPressed(3)">3</button>
+          <button class="btn btn-op"  id="add"      onclick="operationPressed('+')">+</button>
+
+          <button class="btn btn-op" onclick="setOperation('pow')">^</button>
+          <button class="btn btn-num" id="zero"     onclick="numberPressed(0)">0</button>
+          <button class="btn btn-num" id="decimal"  onclick="decimalPressed()">.</button>
+          <button class="btn btn-equals btn-span2"  id="equal" onclick="equalPressed()">=</button>
         </div>
       </div>
+
+      <div class="calc-footer">
+        <span class="calc-footer-text">powered by <span class="green">Node.js</span> &middot; MIT license</span>
+      </div>
+
     </div>
+
   </body>
 </html>

@@ -253,4 +253,14 @@ describe('Arithmetic', function() {
           });
     });
   });
+  describe('Power', function() {
+    it('raises a number to a power', function(done) {
+      request.get('/arithmetic?operation=pow&operand1=2&operand2=3')
+          .expect(200)
+          .end(function(err, res) {
+              expect(res.body).to.eql({ result: 8 });
+              done();
+          });
+    });
+  });
 });
