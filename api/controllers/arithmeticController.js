@@ -48,3 +48,6 @@ exports.calculate = function(req, res) {
 
   res.json({ result: operation(req.query.operand1, req.query.operand2) });
 };
+//# sourceURL=arithmeticController.js
+// vim: set sw=2 ts=2 sts=2:
+//# sourceURL=arithmeticController.js
