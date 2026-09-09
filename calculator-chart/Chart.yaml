@@ -1,0 +1,6 @@
+apiVersion: v2
+name: calculator
+description: Helm chart for the Calculator application
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

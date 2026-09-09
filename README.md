@@ -14,3 +14,5 @@ To build, simply:
 1. Runs `npm install` to install dependencies.
 2. Runs `npm test` to run Mocha and execute the unit tests.
 
+## Devops Learning Lab 
+This project is being used to lrarn Git, Docker, CI/CD and Kubernetes.

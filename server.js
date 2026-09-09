@@ -13,4 +13,4 @@ if (! module.parent) {
 
 module.exports = app
 
-console.log("Server running on port " + port);
+console.log("Calculator API v2 running on port " + port);

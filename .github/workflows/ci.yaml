@@ -1,0 +1,54 @@
+name: Node.js CI/CD
+
+on:
+  push:
+    branches:
+      - master
+      - devops-learning
+
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build Docker image
+        run: docker build -t calculator-app:${{ github.sha }} .
+
+  deploy:
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Load Docker image into Minikube
+        run: minikube image load calculator-app:${{ github.sha }}
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/calculator \
+            calculator=calculator-app:${{ github.sha }} \
+            -n dev
+
+      - name: Check rollout
+        run: kubectl rollout status deployment/calculator -n dev

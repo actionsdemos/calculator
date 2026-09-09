@@ -1,0 +1,86 @@
+
+# Declare variables to be passed into your templates.
+
+# This will set the replicaset count more information can be found here: https://kubernetes.io/doc
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/
+  # Overrides the image tag whose default is the chart appVersi
+# This is for the secrets for pulling an image from a private repository more information can be found ere: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-reg
+# This is to override the chart 
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-acc
+  # Specifies whether a service account shoul
+  # Automatically mount a ServiceAccount's API credentials?
+
+  # Annotations to add to the se  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname 
+
+# This is for setting Kubernetes Annotations to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annot
+# This is for setting Kubernetes Labels to a Pod.
+# For more information checkout: https://kubernetes.io/docs/conce
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concept
+  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#
+  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+
+# This block is for setting up the ingress for more information c
+    #   hosts:
+    #     - chart-example.local
+
+# -- Expose the service via gateway-api HTTPRoute
+# Requires Gateway API resources and suitable controller installed within the cluster
+# (see: https
+  #   filters:
+  #   - type: RequestHeaderModifier
+  #     requestHeaderModifier:
+  #       set:
+  #       - name: My-Overwrite-Header
+  #         value: this-is-the-only-value
+  #       remove:
+  #       - User-Agent
+  # - matches:
+  #   - path:
+  #       type: PathPrefix
+  #       value: /echo
+  #     headers:
+  #     - name: 
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases 
+replicaCount: 3
+
+image:
+  repository: calculator-app
+  tag: v1
+  pullPolicy: Never
+
+service:
+  type: ClusterIP
+  port: 3000
+  targetPort: 3000
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "256Mi"
+
+config:
+  APP_ENV: "development"
+  APP_NAME: "calculator"
+
+secret:
+  existingSecret: calculator-secret
+
+ingress:
+  enabled: false
+  className: nginx
+  host: calculator-helm.local
