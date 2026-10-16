@@ -1,0 +1,67 @@
+name: Node.js CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - test-8
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install Dependencies
+        run: npm install
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Tests
+        run: npm test
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: |
+          docker build -t node-app .
+
+      - name: Run Container in Background
+        run: |
+          docker run -d --name node-app-container -p 3000:3000 node-app
+
+      - name: Verify Running Container
+        run: |
+          docker ps
+
+      - name: Stop and Remove Container
+        run: |
+          docker stop node-app-container
+          docker rm node-app-container
