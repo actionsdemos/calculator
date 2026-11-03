@@ -8,8 +8,8 @@
   },
   "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "build": "exit 0",
+    "start": "node init && node server.js",
+    "build": "node init && exit 0",
     "test": "nyc --reporter=cobertura --reporter=html --reporter=text mocha --timeout 10000 --reporter mocha-multi-reporters --reporter-options configFile=test/config.json"
   },
   "keywords": [
